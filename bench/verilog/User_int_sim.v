@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
-////  Ramdon_gen.v                                                ////
+////  User_input_sim.v                                            ////
 ////                                                              ////
 ////  This file is part of the Ethernet IP core project           ////
 ////  http://www.opencores.org/projects.cgi/web/ethernet_tri_mode/////
@@ -38,79 +38,84 @@
 //                                                                    
 // CVS Revision History                                               
 //                                                                    
-// $Log: not supported by cvs2svn $
-// Revision 1.1.1.1  2005/12/13 01:51:45  Administrator
+//
+// Revision 1.1.1.1  2005/12/13 01:51:44  Administrator
 // no message
-//                                           
-
-module Ramdon_gen( 
-Reset	        ,
-Clk	            ,
-Init	        ,
-RetryCnt	    ,
-Random_time_meet
+// 
+module User_int_sim (
+input			Reset					,
+input			Clk_user				,
+				//user inputerface 
+input			Rx_mac_ra				,
+output			Rx_mac_rd				,
+input	[31:0]	Rx_mac_data				,
+input	[1:0]	Rx_mac_BE				,
+input			Rx_mac_pa				,
+input			Rx_mac_sop				,
+input			Rx_mac_eop				,
+				//user inputerface 
+input			Tx_mac_wa	        	,
+output			Tx_mac_wr	        	,
+output	[31:0]	Tx_mac_data	        	,
+output 	[1:0]	Tx_mac_BE				,//big endian
+output			Tx_mac_sop	        	,
+output			Tx_mac_eop				
 );
-input			Reset	        ;
-input			Clk	            ;
-input			Init	        ;
-input[3:0]		RetryCnt	    ;
-output			Random_time_meet;	
+//////////////////////////////////////////////////////////////////////
+// inputernal signals
+//////////////////////////////////////////////////////////////////////
+reg[4:0]		operation;
+reg[31:0]		data;
+reg				Rx_mac_rd;
+reg				Start_tran;
+//////////////////////////////////////////////////////////////////////
+//generate Tx user data
+//////////////////////////////////////////////////////////////////////
+initial 
+	begin
+	operation 	=0;
+	data		=0;
+	end    
 
-//******************************************************************************
-//internal signals                                                              
-//******************************************************************************
-reg[9:0]		Random_sequence	;
-reg[9:0]		Ramdom			;
-reg[9:0]		Ramdom_counter	;
-reg[7:0]		Slot_time_counter; //256*2=512bit=1 slot time
-reg				Random_time_meet;
-
-//******************************************************************************
-always @ (posedge Clk or posedge Reset)
+always @ (posedge Clk_user or posedge Reset)
 	if (Reset)
-		Random_sequence		<=0;
-	else
-		Random_sequence		<={Random_sequence[8:0],~(Random_sequence[2]^Random_sequence[9])};
+		Start_tran  	<=0;
+	else if (Tx_mac_eop&&!Tx_mac_wa)  
+		Start_tran  	<=0;     
+	else if (Tx_mac_wa)
+		Start_tran  	<=1;     
 		
-always @ (RetryCnt or Random_sequence)
-	case (RetryCnt)
-		4'h0	:	Ramdom={9'b0,Random_sequence[0]};
-		4'h1	:	Ramdom={8'b0,Random_sequence[1:0]};		
-		4'h2	:	Ramdom={7'b0,Random_sequence[2:0]};
-		4'h3	:	Ramdom={6'b0,Random_sequence[3:0]};
-		4'h4	:	Ramdom={5'b0,Random_sequence[4:0]};
-		4'h5	:	Ramdom={4'b0,Random_sequence[5:0]};
-		4'h6	:	Ramdom={3'b0,Random_sequence[6:0]};
-		4'h7	:	Ramdom={2'b0,Random_sequence[7:0]};
-		4'h8	:	Ramdom={1'b0,Random_sequence[8:0]};
-		4'h9	:	Ramdom={	 Random_sequence[9:0]};  
-		default	:	Ramdom={	 Random_sequence[9:0]};
-	endcase
-
-always @ (posedge Clk or posedge Reset)
-	if (Reset)
-		Slot_time_counter		<=0;
-	else if(Init)
-		Slot_time_counter		<=0;
-	else if(!Random_time_meet)
-		Slot_time_counter		<=Slot_time_counter+1;
 	
-always @ (posedge Clk or posedge Reset)
+always @ (posedge Clk_user )
+	if (Tx_mac_wa)
+		$ip_32W_gen("config.ini",operation,data);
+	else
+		begin
+		operation	<=0;
+		data		<=0;
+		end
+
+assign Tx_mac_data	=data;
+assign Tx_mac_wr	=operation[4];
+assign Tx_mac_sop	=operation[3];
+assign Tx_mac_eop   =operation[2];
+assign Tx_mac_BE    =operation[1:0];
+//////////////////////////////////////////////////////////////////////
+//verify Rx user data
+//////////////////////////////////////////////////////////////////////
+always @ (posedge Clk_user or posedge Reset)
 	if (Reset)
-		Ramdom_counter		<=0;
-	else if (Init)
-		Ramdom_counter		<=Ramdom;
-	else if (Ramdom_counter!=0&&Slot_time_counter==255)
-		Ramdom_counter		<=Ramdom_counter -1 ;
+		Rx_mac_rd	<=0;
+	else if(Rx_mac_ra)
+		Rx_mac_rd	<=1;
+	else
+		Rx_mac_rd	<=0;
 		
-always @ (posedge Clk or posedge Reset)
-	if (Reset)
-		Random_time_meet	<=1;
-	else if (Init)
-		Random_time_meet	<=0;
-	else if (Ramdom_counter==0)
-		Random_time_meet	<=1;
-		
+
+always @ (posedge Clk_user )
+	if (Rx_mac_pa)    
+		$ip_32W_check(	Rx_mac_data,
+						{Rx_mac_sop,Rx_mac_eop,Rx_mac_eop?Rx_mac_BE:2'b0});
+				
 endmodule
-
-
+						

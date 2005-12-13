@@ -38,7 +38,10 @@
 //                                                                    
 // CVS Revision History                                               
 //                                                                    
-// $Log: not supported by cvs2svn $ 
+// $Log: not supported by cvs2svn $
+// Revision 1.1.1.1  2005/12/13 01:51:44  Administrator
+// no message
+// 
 
 module Clk_ctrl(   
 Reset			,
@@ -82,11 +85,13 @@ assign Gtx_clk 		=Clk_125M					;
 assign MAC_rx_clk	=Rx_clk						;
 
 CLK_DIV2 U_0_CLK_DIV2(
+.Reset			(Reset			),
 .IN				(Rx_clk         ),
 .OUT            (Rx_clk_div2	)
 );
 
 CLK_DIV2 U_1_CLK_DIV2(
+.Reset			(Reset			),
 .IN				(Tx_clk         ),
 .OUT            (Tx_clk_div2	)
 );

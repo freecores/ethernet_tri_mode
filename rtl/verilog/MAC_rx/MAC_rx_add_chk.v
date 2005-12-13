@@ -38,7 +38,10 @@
 //                                                                    
 // CVS Revision History                                               
 //                                                                    
-// $Log: not supported by cvs2svn $                                           
+// $Log: not supported by cvs2svn $
+// Revision 1.1.1.1  2005/12/13 01:51:45  Administrator
+// no message
+//                                           
 
 module MAC_rx_add_chk (     
 Reset				,                                

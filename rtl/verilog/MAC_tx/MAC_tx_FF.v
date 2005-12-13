@@ -38,7 +38,11 @@
 //                                                                    
 // CVS Revision History                                               
 //                                                                    
-// $Log: not supported by cvs2svn $                                           
+// $Log: not supported by cvs2svn $
+//
+// Revision 1.1.1.1  2005/12/13 01:51:45  Administrator
+// no message
+//                                           
 
 module MAC_tx_FF ( 
 Reset				,      
@@ -98,10 +102,7 @@ parameter		MAC_byte3				=4'd00;
 parameter		MAC_byte2				=4'd01;
 parameter		MAC_byte1				=4'd02;	
 parameter		MAC_byte0				=4'd03;	
-parameter		MAC_BE0					=4'd04;
-parameter		MAC_BE3					=4'd05;		
-parameter		MAC_BE2					=4'd06;
-parameter		MAC_BE1					=4'd07;
+parameter		MAC_wait_finish			=4'd04;
 parameter		MAC_retry				=4'd08;
 parameter		MAC_idle				=4'd09;
 parameter		MAC_FFEmpty				=4'd10;
@@ -213,8 +214,14 @@ always @ (Current_state_SYS or Tx_mac_wr or Tx_mac_sop or Full or AlmostFull
 			else
 				Next_state_SYS		=Current_state_SYS ;
 		SYS_EOP_ok:
+			if (Tx_mac_wr&&Tx_mac_sop)
+				Next_state_SYS  	=SYS_SOP;
+			else
 				Next_state_SYS  	=SYS_idle;
 		SYS_EOP_err:
+			if (Tx_mac_wr&&Tx_mac_sop)
+				Next_state_SYS  	=SYS_SOP;
+			else
 				Next_state_SYS  	=SYS_idle;
 		SYS_SOP_err:
 				Next_state_SYS  	=SYS_DROP;
@@ -411,7 +418,7 @@ always @ (posedge Clk_SYS or posedge Reset)
 always @ (posedge Clk_SYS or posedge Reset)
 	if (Reset)
 		Fifo_ra_tmp	<=0;	
-	else if (Packet_number_inFF_reg>=1||Fifo_data_count>=Tx_Hwmark)
+	else if (Packet_number_inFF_reg>=1||Fifo_data_count>=Tx_Lwmark)
 		Fifo_ra_tmp	<=1;		
 	else 
 		Fifo_ra_tmp	<=0;
@@ -499,43 +506,48 @@ always @ (Current_state_MAC or Fifo_rd or Dout_BE or Dout_eop or Fifo_rd_retry
 			MAC_byte3:
 				if (Fifo_rd_retry)
 					Next_state_MAC=MAC_retry;			
-				else if (Fifo_rd_finish)
-					Next_state_MAC=MAC_pkt_sub;
-				else if (Fifo_rd)
+				else if (Fifo_eop)
+					Next_state_MAC=MAC_wait_finish;
+				else if (Fifo_rd&&!Fifo_eop)
 					Next_state_MAC=MAC_byte2;
 				else
 					Next_state_MAC=Current_state_MAC;
 			MAC_byte2:
 				if (Fifo_rd_retry)
 					Next_state_MAC=MAC_retry;
-				else if (Fifo_rd_finish)
-					Next_state_MAC=MAC_pkt_sub;
-				else if (Fifo_rd)
+				else if (Fifo_eop)
+					Next_state_MAC=MAC_wait_finish;
+				else if (Fifo_rd&&!Fifo_eop)
 					Next_state_MAC=MAC_byte1;
 				else
 					Next_state_MAC=Current_state_MAC;		
 			MAC_byte1:
 				if (Fifo_rd_retry)
 					Next_state_MAC=MAC_retry;
-				else if (Fifo_rd_finish)
-					Next_state_MAC=MAC_pkt_sub;
-				else if (Fifo_rd)
+				else if (Fifo_eop)
+					Next_state_MAC=MAC_wait_finish;
+				else if (Fifo_rd&&!Fifo_eop)
 					Next_state_MAC=MAC_byte0;
 				else
 					Next_state_MAC=Current_state_MAC;	
 			MAC_byte0:
-				if (Empty&&Fifo_rd)
+				if (Empty&&Fifo_rd&&!Fifo_eop)
 					Next_state_MAC=MAC_FFEmpty;
 				else if (Fifo_rd_retry)
 					Next_state_MAC=MAC_retry;
-				else if (Fifo_rd_finish)
-					Next_state_MAC=MAC_pkt_sub;			
-				else if (Fifo_rd)
+				else if (Fifo_eop)
+					Next_state_MAC=MAC_wait_finish;		
+				else if (Fifo_rd&&!Fifo_eop)
 					Next_state_MAC=MAC_byte3;
 				else
 					Next_state_MAC=Current_state_MAC;	
 			MAC_retry:
 					Next_state_MAC=MAC_idle;
+			MAC_wait_finish:
+				if (Fifo_rd_finish)
+					Next_state_MAC=MAC_pkt_sub;
+				else
+					Next_state_MAC=Current_state_MAC;
 			MAC_pkt_sub:
 					Next_state_MAC=MAC_idle;
 			MAC_FFEmpty:
@@ -682,10 +694,12 @@ always @ (posedge Clk_MAC or posedge Reset)
 	else
 		Fifo_rd_dl1		<=Fifo_rd;
 		
-always @ (Current_state_MAC or Fifo_rd_dl1)
-	if (Current_state_MAC==MAC_byte0||Current_state_MAC==MAC_byte1||
-		Current_state_MAC==MAC_byte2||Current_state_MAC==MAC_byte3)
-		Fifo_da			=Fifo_rd_dl1;
+always @ (posedge Clk_MAC or posedge Reset)
+	if (Reset)
+		Fifo_da			<=0;
+	else if ((Current_state_MAC==MAC_byte0||Current_state_MAC==MAC_byte1||
+			  Current_state_MAC==MAC_byte2||Current_state_MAC==MAC_byte3)&&Fifo_rd&&!Fifo_eop)
+		Fifo_da			<=1;
 	else
 		Fifo_da			=0;
 

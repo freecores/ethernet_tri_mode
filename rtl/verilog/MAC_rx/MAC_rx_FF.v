@@ -38,7 +38,11 @@
 //                                                                    
 // CVS Revision History                                               
 //                                                                    
-// $Log: not supported by cvs2svn $                                           
+// $Log: not supported by cvs2svn $
+//
+// Revision 1.1.1.1  2005/12/13 01:51:45  Administrator
+// no message
+//                                           
 
 module MAC_rx_FF (
 Reset		,                                                                                                                                             
@@ -140,6 +144,9 @@ wire			Packet_number_add_edge;
 reg				Packet_number_add_dl1;
 reg				Packet_number_add_dl2;
 reg				Packet_number_add ;
+reg				Packet_number_add_tmp 	 ;
+reg				Packet_number_add_tmp_dl1;
+reg				Packet_number_add_tmp_dl2;
 
 reg  			Rx_mac_sop_tmp_dl1;
 reg[35:0]		Dout_dl1;
@@ -309,16 +316,10 @@ always @ (posedge Clk_MAC or posedge Reset)
 	else if (Current_state==State_byte1&&Fifo_data_en_dl1)
 		Fifo_data_byte1		<=Fifo_data_dl1;
 
-always @ (posedge Clk_MAC or posedge Reset)
-	if (Reset)
-		Fifo_data_byte0		<=0;
-	else if (Current_state==State_byte0&&Fifo_data_en_dl1)
-		Fifo_data_byte0		<=Fifo_data_dl1;
-		
-always @ (Current_state or Fifo_data_byte3 or Fifo_data_byte2 or Fifo_data_byte1 or Fifo_data_byte0 )
+always @ (Current_state or Fifo_data_byte3 or Fifo_data_byte2 or Fifo_data_byte1 )
 	case (Current_state)
 		State_be0:
-			Din	={4'b1000,Fifo_data_byte3,Fifo_data_byte2,Fifo_data_byte1,Fifo_data_byte0};		
+			Din	={4'b1000,Fifo_data_byte3,Fifo_data_byte2,Fifo_data_byte1,Fifo_data_dl1};		
 		State_be1:
 			Din	={4'b1001,Fifo_data_byte3,24'h0};
 		State_be2:
@@ -326,7 +327,7 @@ always @ (Current_state or Fifo_data_byte3 or Fifo_data_byte2 or Fifo_data_byte1
 		State_be3:
 			Din	={4'b1011,Fifo_data_byte3,Fifo_data_byte2,Fifo_data_byte1,8'h0};
 		default:
-			Din	={4'b0000,Fifo_data_byte3,Fifo_data_byte2,Fifo_data_byte1,Fifo_data_byte0};
+			Din	={4'b0000,Fifo_data_byte3,Fifo_data_byte2,Fifo_data_byte1,Fifo_data_dl1};
 	endcase
 	
 always @ (Current_state or Fifo_data_en)
@@ -339,9 +340,32 @@ always @ (Current_state or Fifo_data_en)
 //this signal for read side to handle the packet number in fifo
 always @ (posedge Clk_MAC or posedge Reset)
 	if (Reset)
-		Packet_number_add	<=0;
+		Packet_number_add_tmp	<=0;
 	else if (Current_state==State_be0||Current_state==State_be1||
 	   		 Current_state==State_be2||Current_state==State_be3)
+	   	Packet_number_add_tmp	<=1;
+	else 
+		Packet_number_add_tmp	<=0;
+		
+always @ (posedge Clk_MAC or posedge Reset)
+	if (Reset)
+		begin
+		Packet_number_add_tmp_dl1	<=0;
+		Packet_number_add_tmp_dl2	<=0;
+		end
+	else
+		begin
+		Packet_number_add_tmp_dl1	<=Packet_number_add_tmp;
+		Packet_number_add_tmp_dl2	<=Packet_number_add_tmp_dl1;
+		end		
+		
+//Packet_number_add delay to Din[35] is needed to make sure the data have been wroten to ram.		
+//expand to two cycles long almost=16 ns
+//if the Clk_SYS period less than 16 ns ,this signal need to expand to 3 or more clock cycles		
+always @ (posedge Clk_MAC or posedge Reset)
+	if (Reset)
+		Packet_number_add	<=0;
+	else if (Packet_number_add_tmp_dl1||Packet_number_add_tmp_dl2)
 	   	Packet_number_add	<=1;
 	else 
 		Packet_number_add	<=0;

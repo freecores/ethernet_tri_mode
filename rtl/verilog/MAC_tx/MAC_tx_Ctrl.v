@@ -38,7 +38,11 @@
 //                                                                    
 // CVS Revision History                                               
 //                                                                    
-// $Log: not supported by cvs2svn $                                           
+// $Log: not supported by cvs2svn $
+//
+// Revision 1.1.1.1  2005/12/13 01:51:45  Administrator
+// no message
+//                                           
 
 module MAC_tx_ctrl (  
 Reset	       		,
@@ -242,8 +246,7 @@ always @(posedge Clk or posedge Reset)
 		IPLengthCounter		<=0;
 	else if (Current_state==StateSwitchNext)
 		IPLengthCounter		<=0;	
-	else if (IPLengthCounter!=8'hff&&((Current_state==StateData)||
-			(PADCounter==0&&Current_state==StatePAD)))
+	else if (IPLengthCounter!=8'hff&&(Current_state==StateData||Current_state==StatePAD))
 		IPLengthCounter		<=IPLengthCounter+1;
 
 always @(posedge Clk or posedge Reset)
@@ -312,7 +315,7 @@ always @ (*)
 					Next_state=StateJam;
 				else if (Fifo_data_err_empty)
 					Next_state=StateFFEmptyDrop;				
-				else if (Fifo_eop&&IPLengthCounter>=60)//IP+MAC+TYPE=60
+				else if (Fifo_eop&&IPLengthCounter>=59)//IP+MAC+TYPE=60 ,start from 0
 					Next_state=StateFCS;
 				else if (Fifo_eop)
 					Next_state=StatePAD;
@@ -321,7 +324,7 @@ always @ (*)
 			StatePAD:
 				if (!FullDuplex&&Collision)
 					Next_state=StateJam; 
-				else if (IPLengthCounter>=60)
+				else if (IPLengthCounter>=59)
 					Next_state=StateFCS;		
 				else 
 					Next_state=Current_state;
@@ -472,7 +475,7 @@ always @(*)
 		StateSFD:
 			TxD_tmp	=8'hd5;
 		StateData:
-			if (Src_MAC_ptr)       
+			if (Src_MAC_ptr&&MAC_tx_add_en)       
 				TxD_tmp	=MAC_tx_addr_data;
 			else
 				TxD_tmp	=Fifo_data;
@@ -523,7 +526,7 @@ always @ (posedge Clk or posedge Reset)
 	if (Reset)
 		Tx_pkt_length_rmon		<=0;
 	else if (Current_state==StateSFD)
-		Tx_pkt_length_rmon		<=4;
+		Tx_pkt_length_rmon		<=0;
 	else if (Current_state==StateData)
 		Tx_pkt_length_rmon		<=Tx_pkt_length_rmon+1;
 		
@@ -553,7 +556,7 @@ always @ (posedge Clk or posedge Reset)
 	if (Reset)
 		MAC_header_slot_tmp	<=0;
 	else if(Current_state==StateSFD&&Next_state==StateData)
-		MAC_header_slot_tmp	<=1;	
+		MAC_header_slot_tmp	<=0;	
 	else
 		MAC_header_slot_tmp	<=0;
 		

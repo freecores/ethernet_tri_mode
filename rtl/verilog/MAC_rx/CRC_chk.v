@@ -38,7 +38,10 @@
 //                                                                    
 // CVS Revision History                                               
 //                                                                    
-// $Log: not supported by cvs2svn $                                           
+// $Log: not supported by cvs2svn $
+// Revision 1.1.1.1  2005/12/13 01:51:45  Administrator
+// no message
+//                                           
 
 module CRC_chk(
 Reset		,
@@ -114,6 +117,6 @@ always @ (posedge Clk or posedge Reset)
 	else if (CRC_en)
 		CRC_reg		<=NextCRC(CRC_data,CRC_reg);
 
-assign	CRC_err = CRC_chk_en&(Next_CRC[31:0] != 32'hc704dd7b);
+assign	CRC_err = CRC_chk_en&(CRC_reg[31:0] != 32'hc704dd7b);
 
 endmodule

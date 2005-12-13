@@ -38,7 +38,10 @@
 //                                                                    
 // CVS Revision History                                               
 //                                                                    
-// $Log: not supported by cvs2svn $ 
+// $Log: not supported by cvs2svn $
+// Revision 1.1.1.1  2005/12/13 01:51:44  Administrator
+// no message
+// 
 
 
 //////////////////////////////////////////////////////////////////////
@@ -47,11 +50,15 @@
 //////////////////////////////////////////////////////////////////////
 
 module CLK_DIV2 (
+input		Reset,
 input		IN,
 output	reg	OUT
 );
 
-always @ (posedge IN)
-	OUT		<=!OUT;    
+always @ (posedge IN or posedge Reset)
+	if (Reset)
+		OUT		<=0;  
+	else
+		OUT		<=!OUT;    
 	
 endmodule

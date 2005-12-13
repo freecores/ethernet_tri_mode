@@ -37,8 +37,10 @@
 //////////////////////////////////////////////////////////////////////
 //                                                                    
 // CVS Revision History                                               
-//                                                                    
-// $Log: not supported by cvs2svn $                                           
+// $Log: not supported by cvs2svn $
+// Revision 1.1.1.1  2005/12/13 01:51:45  Administrator
+// no message
+//                                           
 
 module MAC_rx_ctrl (
 Reset	,                                     
@@ -121,6 +123,7 @@ parameter		State_idle			=4'd00;
 parameter		State_preamble      =4'd01;
 parameter		State_SFD           =4'd02;
 parameter		State_data          =4'd03;
+parameter		State_checkCRC      =4'd04;
 parameter		State_OkEnd			=4'd07;
 parameter		State_drop          =4'd08;
 parameter		State_ErrEnd		=4'd09;
@@ -222,18 +225,21 @@ always @ (*)
 					else                                
 						Next_state	=State_data;       
 			State_data:                                
-					if (!Crs_dv&&!CRC_err&&!Too_short&&!Too_long)                        
-						Next_state	=State_OkEnd;   
+					if (!Crs_dv&&!Too_short&&!Too_long)                        
+						Next_state	=State_checkCRC;   
 					else if (!Crs_dv&&(Too_short||Too_long))
 						Next_state	=State_ErrEnd;
-					else if (!Crs_dv&&CRC_err)
-						Next_state	=State_CRCErrEnd;
 					else if (Fifo_full)
 						Next_state	=State_FFFullErrEnd;
 					else if (RxErr||MAC_rx_add_chk_err||Too_long||broadcast_drop)                     
 						Next_state	=State_drop;        
 					else                                
-						Next_state	=State_data;	    
+						Next_state	=State_data;	   
+			State_checkCRC:
+					 if (CRC_err)
+					 	Next_state	=State_CRCErrEnd;
+					 else
+					 	Next_state	=State_OkEnd; 
 			State_drop:                                 
 					if (!Crs_dv)                        
 						Next_state	=State_ErrEnd;	    
@@ -319,7 +325,7 @@ always @ (posedge Clk or posedge Reset)
 	if (Reset)	
 		Frame_length_counter		<=0;
 	else if (Current_state==State_SFD)
-		Frame_length_counter		<=0;
+		Frame_length_counter		<=1;
 	else if (Current_state==State_data)
 		Frame_length_counter		<=Frame_length_counter+ 1;
 		

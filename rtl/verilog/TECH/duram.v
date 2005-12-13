@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
-////  Ramdon_gen.v                                                ////
+////  duram.v                                                     ////
 ////                                                              ////
 ////  This file is part of the Ethernet IP core project           ////
 ////  http://www.opencores.org/projects.cgi/web/ethernet_tri_mode/////
@@ -39,78 +39,90 @@
 // CVS Revision History                                               
 //                                                                    
 // $Log: not supported by cvs2svn $
-// Revision 1.1.1.1  2005/12/13 01:51:45  Administrator
-// no message
-//                                           
+module duram(
+data_a,
+data_b,
+wren_a,
+wren_b,
+address_a,
+address_b,
+clock_a,
+clock_b,
+q_a,
+q_b);   //synthesis syn_black_box
 
-module Ramdon_gen( 
-Reset	        ,
-Clk	            ,
-Init	        ,
-RetryCnt	    ,
-Random_time_meet
+parameter DATA_WIDTH 	= 32; 
+parameter ADDR_WIDTH 	= 5;  
+parameter BLK_RAM_TYPE  = "AUTO";
+parameter DURAM_MODE	= "BIDIR_DUAL_PORT";
+parameter ADDR_DEPTH 	= 2**ADDR_WIDTH;
+
+
+
+input	[DATA_WIDTH -1:0]  	data_a;
+input	  					wren_a;
+input	[ADDR_WIDTH -1:0]  	address_a;
+input	 					clock_a;
+output	[DATA_WIDTH -1:0] 	q_a;
+input	[DATA_WIDTH -1:0]  	data_b;
+input	  					wren_b;
+input	[ADDR_WIDTH -1:0]  	address_b;
+input	  					clock_b;
+output	[DATA_WIDTH -1:0] 	q_b;
+ 
+ 
+
+altsyncram U_altsyncram (
+.wren_a			(wren_a),
+.wren_b			(wren_b),
+.data_a			(data_a),
+.data_b			(data_b),
+.address_a		(address_a),
+.address_b		(address_b),
+.clock0			(clock_a),
+.clock1			(clock_b),
+.q_a			(q_a),
+.q_b			(q_b),
+// synopsys translate_off
+.aclr0 (),
+.aclr1 (),
+.addressstall_a (),
+.addressstall_b (),
+.byteena_a (),
+.byteena_b (),
+.clocken0 (),
+.clocken1 (),
+.rden_b ()
+// synopsys translate_on
 );
-input			Reset	        ;
-input			Clk	            ;
-input			Init	        ;
-input[3:0]		RetryCnt	    ;
-output			Random_time_meet;	
-
-//******************************************************************************
-//internal signals                                                              
-//******************************************************************************
-reg[9:0]		Random_sequence	;
-reg[9:0]		Ramdom			;
-reg[9:0]		Ramdom_counter	;
-reg[7:0]		Slot_time_counter; //256*2=512bit=1 slot time
-reg				Random_time_meet;
-
-//******************************************************************************
-always @ (posedge Clk or posedge Reset)
-	if (Reset)
-		Random_sequence		<=0;
-	else
-		Random_sequence		<={Random_sequence[8:0],~(Random_sequence[2]^Random_sequence[9])};
-		
-always @ (RetryCnt or Random_sequence)
-	case (RetryCnt)
-		4'h0	:	Ramdom={9'b0,Random_sequence[0]};
-		4'h1	:	Ramdom={8'b0,Random_sequence[1:0]};		
-		4'h2	:	Ramdom={7'b0,Random_sequence[2:0]};
-		4'h3	:	Ramdom={6'b0,Random_sequence[3:0]};
-		4'h4	:	Ramdom={5'b0,Random_sequence[4:0]};
-		4'h5	:	Ramdom={4'b0,Random_sequence[5:0]};
-		4'h6	:	Ramdom={3'b0,Random_sequence[6:0]};
-		4'h7	:	Ramdom={2'b0,Random_sequence[7:0]};
-		4'h8	:	Ramdom={1'b0,Random_sequence[8:0]};
-		4'h9	:	Ramdom={	 Random_sequence[9:0]};  
-		default	:	Ramdom={	 Random_sequence[9:0]};
-	endcase
-
-always @ (posedge Clk or posedge Reset)
-	if (Reset)
-		Slot_time_counter		<=0;
-	else if(Init)
-		Slot_time_counter		<=0;
-	else if(!Random_time_meet)
-		Slot_time_counter		<=Slot_time_counter+1;
-	
-always @ (posedge Clk or posedge Reset)
-	if (Reset)
-		Ramdom_counter		<=0;
-	else if (Init)
-		Ramdom_counter		<=Ramdom;
-	else if (Ramdom_counter!=0&&Slot_time_counter==255)
-		Ramdom_counter		<=Ramdom_counter -1 ;
-		
-always @ (posedge Clk or posedge Reset)
-	if (Reset)
-		Random_time_meet	<=1;
-	else if (Init)
-		Random_time_meet	<=0;
-	else if (Ramdom_counter==0)
-		Random_time_meet	<=1;
-		
-endmodule
+	defparam
+		U_altsyncram.intended_device_family = "Stratix",
+		U_altsyncram.ram_block_type = BLK_RAM_TYPE,
+		U_altsyncram.operation_mode = DURAM_MODE,
+		U_altsyncram.width_a = DATA_WIDTH,
+		U_altsyncram.widthad_a = ADDR_WIDTH,
+//		U_altsyncram.numwords_a = 256,
+		U_altsyncram.width_b = DATA_WIDTH,
+		U_altsyncram.widthad_b = ADDR_WIDTH,
+//		U_altsyncram.numwords_b = 256,
+		U_altsyncram.lpm_type = "altsyncram",
+		U_altsyncram.width_byteena_a = 1,
+		U_altsyncram.width_byteena_b = 1,
+		U_altsyncram.outdata_reg_a = "UNREGISTERED",
+		U_altsyncram.outdata_aclr_a = "NONE",
+		U_altsyncram.outdata_reg_b = "UNREGISTERED",
+		U_altsyncram.indata_aclr_a = "NONE",
+		U_altsyncram.wrcontrol_aclr_a = "NONE",
+		U_altsyncram.address_aclr_a = "NONE",
+		U_altsyncram.indata_reg_b = "CLOCK1",
+		U_altsyncram.address_reg_b = "CLOCK1",
+		U_altsyncram.wrcontrol_wraddress_reg_b = "CLOCK1",
+		U_altsyncram.indata_aclr_b = "NONE",
+		U_altsyncram.wrcontrol_aclr_b = "NONE",
+		U_altsyncram.address_aclr_b = "NONE",
+		U_altsyncram.outdata_aclr_b = "NONE",
+		U_altsyncram.power_up_uninitialized = "FALSE";
+ 
+endmodule 
 
 

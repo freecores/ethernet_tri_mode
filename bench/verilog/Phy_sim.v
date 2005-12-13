@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
-////  Ramdon_gen.v                                                ////
+////  Phy_sim.v                                                   ////
 ////                                                              ////
 ////  This file is part of the Ethernet IP core project           ////
 ////  http://www.opencores.org/projects.cgi/web/ethernet_tri_mode/////
@@ -39,78 +39,58 @@
 // CVS Revision History                                               
 //                                                                    
 // $Log: not supported by cvs2svn $
-// Revision 1.1.1.1  2005/12/13 01:51:45  Administrator
+// Revision 1.1.1.1  2005/12/13 01:51:44  Administrator
 // no message
-//                                           
+// 
 
-module Ramdon_gen( 
-Reset	        ,
-Clk	            ,
-Init	        ,
-RetryCnt	    ,
-Random_time_meet
+`timescale 1ns/100ps 
+
+module Phy_sim (
+input			Gtx_clk					,//used only in GMII mode
+output			Rx_clk					,
+output			Tx_clk					,//used only in MII mode
+input			Tx_er					,
+input			Tx_en					,
+input	[7:0]	Txd						,
+output			Rx_er					,
+output			Rx_dv					,
+output 	[7:0]	Rxd						,
+output			Crs						,
+output			Col						,
+input	[2:0]	Speed				
 );
-input			Reset	        ;
-input			Clk	            ;
-input			Init	        ;
-input[3:0]		RetryCnt	    ;
-output			Random_time_meet;	
-
-//******************************************************************************
-//internal signals                                                              
-//******************************************************************************
-reg[9:0]		Random_sequence	;
-reg[9:0]		Ramdom			;
-reg[9:0]		Ramdom_counter	;
-reg[7:0]		Slot_time_counter; //256*2=512bit=1 slot time
-reg				Random_time_meet;
-
-//******************************************************************************
-always @ (posedge Clk or posedge Reset)
-	if (Reset)
-		Random_sequence		<=0;
-	else
-		Random_sequence		<={Random_sequence[8:0],~(Random_sequence[2]^Random_sequence[9])};
-		
-always @ (RetryCnt or Random_sequence)
-	case (RetryCnt)
-		4'h0	:	Ramdom={9'b0,Random_sequence[0]};
-		4'h1	:	Ramdom={8'b0,Random_sequence[1:0]};		
-		4'h2	:	Ramdom={7'b0,Random_sequence[2:0]};
-		4'h3	:	Ramdom={6'b0,Random_sequence[3:0]};
-		4'h4	:	Ramdom={5'b0,Random_sequence[4:0]};
-		4'h5	:	Ramdom={4'b0,Random_sequence[5:0]};
-		4'h6	:	Ramdom={3'b0,Random_sequence[6:0]};
-		4'h7	:	Ramdom={2'b0,Random_sequence[7:0]};
-		4'h8	:	Ramdom={1'b0,Random_sequence[8:0]};
-		4'h9	:	Ramdom={	 Random_sequence[9:0]};  
-		default	:	Ramdom={	 Random_sequence[9:0]};
-	endcase
-
-always @ (posedge Clk or posedge Reset)
-	if (Reset)
-		Slot_time_counter		<=0;
-	else if(Init)
-		Slot_time_counter		<=0;
-	else if(!Random_time_meet)
-		Slot_time_counter		<=Slot_time_counter+1;
+//////////////////////////////////////////////////////////////////////
+// this file used to simulate Phy.
+// generate clk and loop the Tx data to Rx data
+// full duplex mode can be verified on loop mode.
+//////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
+// internal signals
+//////////////////////////////////////////////////////////////////////
+reg				Clk_25m			;//used for 100 Mbps mode
+reg				Clk_2_5m		;//used for 10 Mbps mode
+wire			Rx_clk			;
+wire			Tx_clk			;//used only in MII mode
+//////////////////////////////////////////////////////////////////////
+always 
+	begin
+	#20		Clk_25m=0;
+	#20		Clk_25m=1;
+	end
 	
-always @ (posedge Clk or posedge Reset)
-	if (Reset)
-		Ramdom_counter		<=0;
-	else if (Init)
-		Ramdom_counter		<=Ramdom;
-	else if (Ramdom_counter!=0&&Slot_time_counter==255)
-		Ramdom_counter		<=Ramdom_counter -1 ;
-		
-always @ (posedge Clk or posedge Reset)
-	if (Reset)
-		Random_time_meet	<=1;
-	else if (Init)
-		Random_time_meet	<=0;
-	else if (Ramdom_counter==0)
-		Random_time_meet	<=1;
-		
+always  
+	begin
+	#200	Clk_2_5m=0;
+	#200	Clk_2_5m=1;
+	end   
+
+assign 	Rx_clk=Speed[2]?Gtx_clk:Speed[1]?Clk_25m:Speed[0]?Clk_2_5m:0;        
+assign 	Tx_clk=Speed[2]?Gtx_clk:Speed[1]?Clk_25m:Speed[0]?Clk_2_5m:0;
+	
+assign	Rx_dv	=Tx_en	;
+assign	Rxd		=Txd	;
+assign	Rx_er	=0		;
+assign	Crs    	=Tx_en	;
+assign  Col		=0		;
+
 endmodule
-
-

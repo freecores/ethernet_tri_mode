@@ -6,7 +6,7 @@
 ////  http://www.opencores.org/projects.cgi/web/ethernet_tri_mode/////
 ////                                                              ////
 ////  Author(s):                                                  ////
-////      - Jon Gao (gaojon@yahoo.com)                      	  ////
+////      - Jon Gao (gaojon@yahoo.com)                            ////
 ////                                                              ////
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
@@ -39,82 +39,86 @@
 // CVS Revision History                                               
 //                                                                    
 // $Log: not supported by cvs2svn $
+// Revision 1.2  2005/12/16 06:44:13  Administrator
+// replaced tab with space.
+// passed 9.6k length frame test.
+//
 // Revision 1.1.1.1  2005/12/13 01:51:44  Administrator
 // no message
 // 
 
 module Clk_ctrl(   
-Reset			,
-Clk_125M		,
+Reset           ,
+Clk_125M        ,
 //host interface,
-Speed			,
-//Phy interface	,
-Gtx_clk			,
-Rx_clk			,
-Tx_clk			,
+Speed           ,
+//Phy interface ,
+Gtx_clk         ,
+Rx_clk          ,
+Tx_clk          ,
 //interface clk ,
-MAC_tx_clk		,
-MAC_rx_clk		,
-MAC_tx_clk_div	,
-MAC_rx_clk_div	
+MAC_tx_clk      ,
+MAC_rx_clk      ,
+MAC_tx_clk_div  ,
+MAC_rx_clk_div  
 );
-input			Reset			;
-input			Clk_125M		;
-				//host interface
-input	[2:0]	Speed			;		
-				//Phy interface			
-output			Gtx_clk			;//used only in GMII mode
-input			Rx_clk			;
-input			Tx_clk			;//used only in MII mode
-				//interface clk signals
-output			MAC_tx_clk		;
-output			MAC_rx_clk		;
-output			MAC_tx_clk_div	;
-output			MAC_rx_clk_div	;
+input           Reset           ;
+input           Clk_125M        ;
+                //host interface
+input   [2:0]   Speed           ;       
+                //Phy interface         
+output          Gtx_clk         ;//used only in GMII mode
+input           Rx_clk          ;
+input           Tx_clk          ;//used only in MII mode
+                //interface clk signals
+output          MAC_tx_clk      ;
+output          MAC_rx_clk      ;
+output          MAC_tx_clk_div  ;
+output          MAC_rx_clk_div  ;
 
 
 //******************************************************************************
 //internal signals                                                              
 //******************************************************************************
-wire			Rx_clk_div2	;
-wire			Tx_clk_div2	;
+wire            Rx_clk_div2 ;
+wire            Tx_clk_div2 ;
 //******************************************************************************
 //                                                              
 //******************************************************************************
-assign Gtx_clk 		=Clk_125M					;
-assign MAC_rx_clk	=Rx_clk						;
+assign Gtx_clk      =Clk_125M                   ;
+assign MAC_rx_clk   =Rx_clk                     ;
 
 CLK_DIV2 U_0_CLK_DIV2(
-.Reset			(Reset			),
-.IN				(Rx_clk         ),
-.OUT            (Rx_clk_div2	)
+.Reset          (Reset          ),
+.IN             (Rx_clk         ),
+.OUT            (Rx_clk_div2    )
 );
 
 CLK_DIV2 U_1_CLK_DIV2(
-.Reset			(Reset			),
-.IN				(Tx_clk         ),
-.OUT            (Tx_clk_div2	)
+.Reset          (Reset          ),
+.IN             (Tx_clk         ),
+.OUT            (Tx_clk_div2    )
 );
 
 CLK_SWITCH U_0_CLK_SWITCH(
-.IN_0			(Rx_clk_div2	),
-.IN_1           (Rx_clk			),
-.SW             (Speed[2]		),
-.OUT            (MAC_rx_clk_div	)
+.IN_0           (Rx_clk_div2    ),
+.IN_1           (Rx_clk         ),
+.SW             (Speed[2]       ),
+.OUT            (MAC_rx_clk_div )
 );
 
 CLK_SWITCH U_1_CLK_SWITCH(
-.IN_0			(Tx_clk			),
-.IN_1           (Clk_125M		),
-.SW             (Speed[2]		),
-.OUT            (MAC_tx_clk		)
+.IN_0           (Tx_clk         ),
+.IN_1           (Clk_125M       ),
+.SW             (Speed[2]       ),
+.OUT            (MAC_tx_clk     )
 );
 
 
 CLK_SWITCH U_2_CLK_SWITCH(
-.IN_0			(Tx_clk_div2	),
-.IN_1           (Clk_125M		),
-.SW             (Speed[2]		),
-.OUT            (MAC_tx_clk_div	)
+.IN_0           (Tx_clk_div2    ),
+.IN_1           (Clk_125M       ),
+.SW             (Speed[2]       ),
+.OUT            (MAC_tx_clk_div )
 );
 endmodule

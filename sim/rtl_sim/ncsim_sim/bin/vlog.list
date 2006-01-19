@@ -1,7 +1,8 @@
+../../../../rtl/verilog/header.v
+
 ../../../../rtl/verilog/TECH/CLK_SWITCH.v
 ../../../../rtl/verilog/TECH/CLK_DIV2.v 
 ../../../../rtl/verilog/TECH/duram.v
-../../../../rtl/verilog/TECH/afifo.v 
 
 ../../../../rtl/verilog/MAC_tx/MAC_tx_FF.v
 ../../../../rtl/verilog/MAC_tx/Ramdon_gen.v
@@ -31,8 +32,10 @@
 ../../../../rtl/verilog/MAC_top.v
 ../../../../rtl/verilog/Phy_int.v
 ../../../../rtl/verilog/Clk_ctrl.v
+../../../../rtl/verilog/Reg_int.v
 
+../../../../bench/verilog/altera_mf.v
 ../../../../bench/verilog/Phy_sim.v
 ../../../../bench/verilog/User_int_sim.v
-../../../../bench/verilog/reg_int_sim.v
+../../../../bench/verilog/host_sim.v
 ../../../../bench/verilog/tb_top.v 

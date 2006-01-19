@@ -6,7 +6,7 @@
 ////  http://www.opencores.org/projects.cgi/web/ethernet_tri_mode/////
 ////                                                              ////
 ////  Author(s):                                                  ////
-////      - Jon Gao (gaojon@yahoo.com)                      	  ////
+////      - Jon Gao (gaojon@yahoo.com)                            ////
 ////                                                              ////
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
@@ -39,6 +39,10 @@
 // CVS Revision History                                               
 //                                                                    
 // $Log: not supported by cvs2svn $
+// Revision 1.2  2005/12/16 06:44:20  Administrator
+// replaced tab with space.
+// passed 9.6k length frame test.
+//
 // Revision 1.1.1.1  2005/12/13 01:51:44  Administrator
 // no message
 // 
@@ -50,15 +54,15 @@
 //////////////////////////////////////////////////////////////////////
 
 module CLK_DIV2 (
-input		Reset,
-input		IN,
-output	reg	OUT
+input       Reset,
+input       IN,
+output  reg OUT
 );
 
 always @ (posedge IN or posedge Reset)
-	if (Reset)
-		OUT		<=0;  
-	else
-		OUT		<=!OUT;    
-	
+    if (Reset)
+        OUT     <=0;  
+    else
+        OUT     <=!OUT;    
+    
 endmodule

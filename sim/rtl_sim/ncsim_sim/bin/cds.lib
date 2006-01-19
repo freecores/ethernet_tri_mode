@@ -1,2 +1,2 @@
 DEFINE work ./worknc
-INCLUDE /root/home/lib/cds.lib
+

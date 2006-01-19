@@ -1,12 +1,12 @@
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
-////  Broadcast_filter.v                                               ////
+////  Broadcast_filter.v                                          ////
 ////                                                              ////
 ////  This file is part of the Ethernet IP core project           ////
 ////  http://www.opencores.org/projects.cgi/web/ethernet_tri_mode/////
 ////                                                              ////
 ////  Author(s):                                                  ////
-////      - Jon Gao (gaojon@yahoo.com)                      	  ////
+////      - Jon Gao (gaojon@yahoo.com)                            ////
 ////                                                              ////
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
@@ -39,59 +39,66 @@
 // CVS Revision History                                               
 //                                                                    
 // $Log: not supported by cvs2svn $
+// Revision 1.2  2005/12/16 06:44:16  Administrator
+// replaced tab with space.
+// passed 9.6k length frame test.
+//
 // Revision 1.1.1.1  2005/12/13 01:51:45  Administrator
 // no message
 //    
 
 module Broadcast_filter (    
-Reset					,
-Clk	                    ,
+Reset                   ,
+Clk                     ,
 //MAC_rx_ctrl           ,
-broadcast_ptr	        ,
-broadcast_drop	        ,
-//FromCPU	            ,
-broadcast_filter_en	    ,
-broadcast_MAX	        ,
-
+broadcast_ptr           ,
+broadcast_drop          ,
+//FromCPU               ,
+broadcast_filter_en     ,
+broadcast_bucket_depth    ,
+broadcast_bucket_interval 
 );
-input			Reset					;
-input			Clk	                    ;
-				//MAC_rx_ctrl
-input			broadcast_ptr	        ;
-output			broadcast_drop	        ;
-				//FromCPU	            ;
-input			broadcast_filter_en	    ;
-input	[15:0]	broadcast_MAX	        ;
+input           Reset                       ;
+input           Clk                         ;
+                //MAC_rx_ctrl               
+input           broadcast_ptr               ;
+output          broadcast_drop              ;
+                //FromCPU                   ;
+input           broadcast_filter_en         ;
+input   [15:0]  broadcast_bucket_depth      ;
+input   [15:0]  broadcast_bucket_interval   ;
 
 //******************************************************************************  
 //internal signals                                                                
 //******************************************************************************  
-reg		[15:0]	time_counter	        ;
-reg		[15:0]	broadcast_counter        ;
-reg				broadcast_drop	        ;
+reg     [15:0]  time_counter            ;
+reg     [15:0]  broadcast_counter        ;
+reg             broadcast_drop          ;
 //******************************************************************************  
 //                                                               
 //****************************************************************************** 
 always @ (posedge Clk or posedge Reset)
-	if (Reset)
-		time_counter	<=0;
-	else 
-		time_counter	<=time_counter+1;
+    if (Reset)
+        time_counter    <=0;
+    else if (time_counter==broadcast_bucket_interval)
+        time_counter    <=0;
+    else
+        time_counter    <=time_counter+1;
 
 always @ (posedge Clk or posedge Reset)
-	if (Reset)
-		broadcast_counter	<=0;
-	else if (time_counter==16'hffff)
-		broadcast_counter	<=0;
-	else if (broadcast_ptr)
-		broadcast_counter	<=broadcast_counter+1;
-				
+    if (Reset)
+        broadcast_counter   <=0;
+    else if (time_counter==broadcast_bucket_interval)
+        broadcast_counter   <=0;
+    else if (broadcast_ptr&&broadcast_counter!=broadcast_bucket_depth)
+        broadcast_counter   <=broadcast_counter+1;
+                
 always @ (posedge Clk or posedge Reset)
-	if (Reset)
-		broadcast_drop		<=0;
-	else if(broadcast_counter>broadcast_MAX)
-		broadcast_drop		<=1;
-	else
-		broadcast_drop		<=0;
+    if (Reset)
+        broadcast_drop      <=0;
+    else if(broadcast_filter_en&&broadcast_counter==broadcast_bucket_depth)
+        broadcast_drop      <=1;
+    else
+        broadcast_drop      <=0;
 
 endmodule

@@ -26,4 +26,3 @@ then
 	rm ../log/sim_succeed
 fi
 
-ncsim work:snap $1 -UNBUFFERED -logfile ../log/ncsim.log -NOKEY 

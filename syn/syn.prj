@@ -1,10 +1,11 @@
 #-- Synplicity, Inc.
-#-- Version Synplify Pro 8.1
-#-- Project file D:\root\home\primitive\primitive_tri_mode_mac(NA)\syn\syn.prj
-#-- Written on Mon Dec 05 14:10:50 2005
+#-- Version Synplify 8.1
+#-- Project file D:\root\home\ethernet_tri_mode\syn\syn.prj
+#-- Written on Thu Jan 19 20:25:55 2006
 
 
 #add_file options
+add_file -verilog "../rtl/verilog/header.v"
 add_file -verilog "../rtl/verilog/MAC_tx/MAC_tx_FF.v"
 add_file -verilog "../rtl/verilog/MAC_tx/Ramdon_gen.v"
 add_file -verilog "../rtl/verilog/MAC_tx/CRC_gen.v"
@@ -19,8 +20,7 @@ add_file -verilog "../rtl/verilog/RMON/RMON_addr_gen.v"
 add_file -verilog "../rtl/verilog/RMON/RMON_ctrl.v"
 add_file -verilog "../rtl/verilog/RMON/RMON_dpram.v"
 add_file -verilog "../rtl/verilog/MAC_rx/Broadcast_filter.v"
-add_file -verilog "../cores/afifo.v"
-add_file -verilog "../cores/duram.v"
+add_file -verilog "../rtl/verilog/TECH/duram.v"
 add_file -verilog "../rtl/verilog/RMON.v"
 add_file -verilog "../rtl/verilog/MAC_rx.v"
 add_file -verilog "../rtl/verilog/MAC_tx.v"
@@ -33,6 +33,7 @@ add_file -verilog "../rtl/verilog/TECH/CLK_DIV2.v"
 add_file -verilog "../rtl/verilog/eth_miim.v"
 add_file -verilog "../rtl/verilog/Clk_ctrl.v"
 add_file -verilog "../rtl/verilog/Phy_int.v"
+add_file -verilog "../rtl/verilog/Reg_int.v"
 add_file -verilog "../rtl/verilog/MAC_top.v"
 
 
@@ -66,9 +67,6 @@ set_option -no_sequential_opt 0
 #simulation options
 set_option -write_verilog 1
 set_option -write_vhdl 0
-
-#VIF options
-set_option -write_vif 0
 
 #automatic place and route (vendor) options
 set_option -write_apr_constraint 0

@@ -3,10 +3,10 @@
 ////  MAC_tx_addr_add.v                                           ////
 ////                                                              ////
 ////  This file is part of the Ethernet IP core project           ////
-////  http://www.opencores.org/projects.cgi/web/ethernet_tri_mode/////
+////  http://www.opencores.org/projects.cgi/wr_en/ethernet_tri_mode/////
 ////                                                              ////
 ////  Author(s):                                                  ////
-////      - Jon Gao (gaojon@yahoo.com)                      	  ////
+////      - Jon Gao (gaojon@yahoo.com)                            ////
 ////                                                              ////
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
@@ -39,84 +39,87 @@
 // CVS Revision History                                               
 //                                                                    
 // $Log: not supported by cvs2svn $
+// Revision 1.2  2005/12/16 06:44:18  Administrator
+// replaced tab with space.
+// passed 9.6k length frame test.
+//
 // Revision 1.1.1.1  2005/12/13 01:51:45  Administrator
 // no message
 //                                           
 
 module MAC_tx_addr_add ( 
-Reset				,
-Clk	                ,
-MAC_tx_addr_init	,
-MAC_tx_addr_rd	    ,
-MAC_tx_addr_data	,
+Reset               ,
+Clk                 ,
+MAC_tx_addr_init    ,
+MAC_tx_addr_rd      ,
+MAC_tx_addr_data    ,
 //CPU               ,
-MAC_add_prom_data	,
-MAC_add_prom_add	,
-MAC_add_prom_wr		
-
+MAC_add_prom_data   ,
+MAC_add_prom_add    ,
+MAC_add_prom_wr     
 );
 
-input			Reset				;
-input			Clk	                ;
-input			MAC_tx_addr_rd	    ;
-input			MAC_tx_addr_init    ;
-output[7:0]		MAC_tx_addr_data	;
-				//CPU               ;
-input[7:0]		MAC_add_prom_data	;
-input[2:0]		MAC_add_prom_add	;
-input			MAC_add_prom_wr		;
+input           Reset               ;
+input           Clk                 ;
+input           MAC_tx_addr_rd      ;
+input           MAC_tx_addr_init    ;
+output  [7:0]   MAC_tx_addr_data    ;
+                //CPU               ;
+input   [7:0]   MAC_add_prom_data   ;
+input   [2:0]   MAC_add_prom_add    ;
+input           MAC_add_prom_wr     ;
 
 //******************************************************************************   
 //internal signals                                                              
 //******************************************************************************
-reg[2:0]	addra;
-wire[2:0] 	addrb;
-wire[7:0] 	dinb;
-wire[7:0] 	douta;
-wire 		web;
-
-
-reg			MAC_add_prom_wr_dl1;
-reg			MAC_add_prom_wr_dl2;
+reg [2:0]       add_rd;
+wire[2:0]       add_wr;
+wire[7:0]       din;
+wire[7:0]       dout;
+wire            wr_en;
+reg             MAC_add_prom_wr_dl1;
+reg             MAC_add_prom_wr_dl2;
 //******************************************************************************   
 //write data from cpu to prom                                                              
 //******************************************************************************
 always @ (posedge Clk or posedge Reset)
-	if (Reset)
-		begin
-		MAC_add_prom_wr_dl1		<=0;
-		MAC_add_prom_wr_dl2		<=0;
-		end
-	else
-		begin
-		MAC_add_prom_wr_dl1		<=MAC_add_prom_wr;
-		MAC_add_prom_wr_dl2		<=MAC_add_prom_wr_dl1;
-		end		
-assign web		=MAC_add_prom_wr_dl1&!MAC_add_prom_wr_dl2;
-assign addrb	=MAC_add_prom_add;
-assign dinb		=MAC_add_prom_data;
+    if (Reset)
+        begin
+        MAC_add_prom_wr_dl1     <=0;
+        MAC_add_prom_wr_dl2     <=0;
+        end
+    else
+        begin
+        MAC_add_prom_wr_dl1     <=MAC_add_prom_wr;
+        MAC_add_prom_wr_dl2     <=MAC_add_prom_wr_dl1;
+        end     
+assign # 2 wr_en   =MAC_add_prom_wr_dl1&!MAC_add_prom_wr_dl2;
+assign # 2 add_wr  =MAC_add_prom_add;
+assign # 2 din     =MAC_add_prom_data;
 
 //******************************************************************************   
 //read data from cpu to prom                                                              
 //******************************************************************************
 always @ (posedge Clk or posedge Reset)
-	if (Reset)
-		addra		<=0;
-	else if (MAC_tx_addr_init)
-		addra		<=0;
-	else if (MAC_tx_addr_rd)
-		addra		<=addra + 1;
-assign MAC_tx_addr_data=douta;		
+    if (Reset)
+        add_rd       <=0;
+    else if (MAC_tx_addr_init)
+        add_rd       <=0;
+    else if (MAC_tx_addr_rd)
+        add_rd       <=add_rd + 1;
+assign MAC_tx_addr_data=dout;      
 //******************************************************************************   
-//a port for read ,b port for write .
+//b port for read ,a port for write .
 //******************************************************************************
 duram #(8,3,"M512","DUAL_PORT") U_duram(           
-.data_a     	(dinb		), 
-.wren_a         (web        ), 
-.address_a      (addra      ), 
-.address_b      (addrb      ), 
-.clock_a        (Clk        ), 
-.clock_b        (Clk        ), 
-.q_b            (douta      ));
+.data_a         (din            ), 
+.wren_a         (wr_en          ), 
+.address_a      (add_wr         ), 
+.address_b      (add_rd         ), 
+.clock_a        (Clk            ), 
+.clock_b        (Clk            ), 
+.q_b            (dout           ));  
+      
+
 endmodule                        
 

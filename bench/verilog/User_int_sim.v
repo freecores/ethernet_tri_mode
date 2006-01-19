@@ -38,6 +38,9 @@
 //                                                                    
 // CVS Revision History                                               
 //                                                                    
+// $Log: not supported by cvs2svn $
+// Revision 1.2  2005/12/13 12:15:35  Administrator
+// no message
 //
 // Revision 1.1.1.1  2005/12/13 01:51:44  Administrator
 // no message
@@ -45,6 +48,7 @@
 module User_int_sim (
 input			Reset					,
 input			Clk_user				,
+input           CPU_init_end            ,
 				//user inputerface 
 input			Rx_mac_ra				,
 output			Rx_mac_rd				,
@@ -86,9 +90,9 @@ always @ (posedge Clk_user or posedge Reset)
 		Start_tran  	<=1;     
 		
 	
-always @ (posedge Clk_user )
-	if (Tx_mac_wa)
-		$ip_32W_gen("config.ini",operation,data);
+always @ (posedge Clk_user)
+	if (Tx_mac_wa&&CPU_init_end)
+		$ip_32W_gen("../data/config.ini",operation,data);
 	else
 		begin
 		operation	<=0;

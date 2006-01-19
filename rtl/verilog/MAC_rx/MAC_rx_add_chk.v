@@ -3,10 +3,10 @@
 ////  MAC_rx_add_chk.v                                            ////
 ////                                                              ////
 ////  This file is part of the Ethernet IP core project           ////
-////  http://www.opencores.org/projects.cgi/web/ethernet_tri_mode/////
+////  http://www.opencores.org/projects.cgi/wr_en/ethernet_tri_mode/////
 ////                                                              ////
 ////  Author(s):                                                  ////
-////      - Jon Gao (gaojon@yahoo.com)                      	  ////
+////      - Jon Gao (gaojon@yahoo.com)                            ////
 ////                                                              ////
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
@@ -39,96 +39,115 @@
 // CVS Revision History                                               
 //                                                                    
 // $Log: not supported by cvs2svn $
+// Revision 1.2  2005/12/16 06:44:17  Administrator
+// replaced tab with space.
+// passed 9.6k length frame test.
+//
 // Revision 1.1.1.1  2005/12/13 01:51:45  Administrator
 // no message
 //                                           
 
 module MAC_rx_add_chk (     
-Reset				,                                
-Clk	                ,                                
-Init	            ,                                
-data	            ,                                
-MAC_add_en	        ,                                
-MAC_rx_add_chk_err	,                                
+Reset               ,                                
+Clk                 ,                                
+Init                ,                                
+data                ,                                
+MAC_add_en          ,                                
+MAC_rx_add_chk_err  ,                                
 //From CPU                                         
-MAC_rx_add_chk_en	,	                             
-MAC_add_prom_data	,		
-MAC_add_prom_add	,    	
-MAC_add_prom_wr		    	
+MAC_rx_add_chk_en   ,                                
+MAC_add_prom_data   ,       
+MAC_add_prom_add    ,       
+MAC_add_prom_wr             
 
 );
-input		Reset				;
-input		Clk	                ;
-input		Init	            ;
-input[7:0]	data	            ;
-input		MAC_add_en	        ;
-output		MAC_rx_add_chk_err	;
-			//From CPU
-input		MAC_rx_add_chk_en	;	
-input[7:0]	MAC_add_prom_data	;	
-input[2:0]	MAC_add_prom_add	;   
-input		MAC_add_prom_wr		;   
+input           Reset               ;
+input           Clk                 ;
+input           Init                ;
+input   [7:0]   data                ;
+input           MAC_add_en          ;
+output          MAC_rx_add_chk_err  ;
+                //From CPU
+input           MAC_rx_add_chk_en   ;   
+input   [7:0]   MAC_add_prom_data   ;   
+input   [2:0]   MAC_add_prom_add    ;   
+input           MAC_add_prom_wr     ;   
 
 //******************************************************************************   
 //internal signals                                                              
 //******************************************************************************
-reg[2:0]	addra;
-wire[2:0] 	addrb;
-wire[7:0] 	dinb;
-wire[7:0] 	douta;
-wire 		web;
+reg [2:0]   addr_rd;
+wire[2:0]   addr_wr;
+wire[7:0]   din;
+wire[7:0]   dout;
+wire        wr_en;
 
-reg			MAC_rx_add_chk_err;
-reg			MAC_add_prom_wr_dl1;
-reg			MAC_add_prom_wr_dl2;
+reg         MAC_rx_add_chk_err;
+reg         MAC_add_prom_wr_dl1;
+reg         MAC_add_prom_wr_dl2;
+reg [7:0]   data_dl1                ;
+reg         MAC_add_en_dl1          ;
 //******************************************************************************   
 //write data from cpu to prom                                                              
 //******************************************************************************
 always @ (posedge Clk or posedge Reset)
-	if (Reset)
-		begin
-		MAC_add_prom_wr_dl1		<=0;
-		MAC_add_prom_wr_dl2		<=0;
-		end
-	else
-		begin
-		MAC_add_prom_wr_dl1		<=MAC_add_prom_wr;
-		MAC_add_prom_wr_dl2		<=MAC_add_prom_wr_dl1;
-		end		
-assign web		=MAC_add_prom_wr_dl1&!MAC_add_prom_wr_dl2;
-assign addrb	=MAC_add_prom_add;
-assign dinb		=MAC_add_prom_data;
+    if (Reset)
+        begin
+        data_dl1            <=0;
+        MAC_add_en_dl1      <=0;
+        end
+    else
+        begin
+        data_dl1            <=data;
+        MAC_add_en_dl1      <=MAC_add_en;
+        end        
+
+always @ (posedge Clk or posedge Reset)
+    if (Reset)
+        begin
+        MAC_add_prom_wr_dl1     <=0;
+        MAC_add_prom_wr_dl2     <=0;
+        end
+    else
+        begin
+        MAC_add_prom_wr_dl1     <=MAC_add_prom_wr;
+        MAC_add_prom_wr_dl2     <=MAC_add_prom_wr_dl1;
+        end    
+         
+assign wr_en      =MAC_add_prom_wr_dl1&!MAC_add_prom_wr_dl2;
+assign addr_wr    =MAC_add_prom_add;
+assign din        =MAC_add_prom_data;
 
 //******************************************************************************   
 //mac add verify                                                             
 //******************************************************************************
 always @ (posedge Clk or posedge Reset)
-	if (Reset)
-		addra		<=0;
-	else if (Init)
-		addra		<=0;
-	else if (MAC_add_en)
-		addra		<=addra + 1;
-		
+    if (Reset)
+        addr_rd       <=0;
+    else if (Init)
+        addr_rd       <=0;
+    else if (MAC_add_en)
+        addr_rd       <=addr_rd + 1;
+        
 always @ (posedge Clk or posedge Reset)
-	if (Reset)
-		MAC_rx_add_chk_err	<=0;
-	else if (Init)
-		MAC_rx_add_chk_err	<=0;
-	else if (MAC_rx_add_chk_en&&MAC_add_en&&douta!=data)
-		MAC_rx_add_chk_err	<=1;
-		
+    if (Reset)
+        MAC_rx_add_chk_err  <=0;
+    else if (Init)
+        MAC_rx_add_chk_err  <=0;
+    else if (MAC_rx_add_chk_en&&MAC_add_en_dl1&&dout!=data_dl1)
+        MAC_rx_add_chk_err  <=1;
+        
 
 //******************************************************************************   
 //a port for read ,b port for write .
 //******************************************************************************     
 duram #(8,3,"M512","DUAL_PORT") U_duram(
-.data_a     	(dinb		),
-.wren_a         (web        ),
-.address_a      (addra      ),
-.address_b      (addrb      ),
+.data_a         (din       ),
+.wren_a         (wr_en        ),
+.address_a      (addr_wr      ),
+.address_b      (addr_rd      ),
 .clock_a        (Clk        ),
 .clock_b        (Clk        ),
-.q_b            (douta      ));
+.q_b            (dout      ));
 
 endmodule

@@ -6,7 +6,7 @@
 ////  http://www.opencores.org/projects.cgi/web/ethernet_tri_mode/////
 ////                                                              ////
 ////  Author(s):                                                  ////
-////      - Jon Gao (gaojon@yahoo.com)                      	  ////
+////      - Jon Gao (gaojon@yahoo.com)                            ////
 ////                                                              ////
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
@@ -39,6 +39,10 @@
 // CVS Revision History                                               
 //                                                                    
 // $Log: not supported by cvs2svn $
+// Revision 1.2  2005/12/16 06:44:20  Administrator
+// replaced tab with space.
+// passed 9.6k length frame test.
+//
 // Revision 1.1.1.1  2005/12/13 01:51:44  Administrator
 // no message
 // 
@@ -49,10 +53,10 @@
 // You need to replace it with your own element according to technology
 //////////////////////////////////////////////////////////////////////
 module CLK_SWITCH (   
-input		IN_0,
-input		IN_1,
-input		SW  ,
-output		OUT 
+input       IN_0,
+input       IN_1,
+input       SW  ,
+output      OUT 
 
 );
 

@@ -1,3 +1,11 @@
+if test -d worknc
+then
+echo worknc is ready
+else
+mkdir worknc
+echo worknc is created
+fi
+
 ncvlog -f vlog.list -logfile ../log/ncvlog.log
 
 if test $? -ne 0

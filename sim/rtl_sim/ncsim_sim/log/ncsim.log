@@ -1,0 +1,24 @@
+ncsim: 05.00-p001: (c) Copyright 1995-2003 Cadence Design Systems, Inc.
+//////////////////////////////////////////////////////////////////////
+////                                                                  
+////     $ip_32W_gen  is used to generate stimulus with 32bit         
+////     width ip packet data flow.                                   
+////     The only parameter is config.ini file that is used to        
+////     control the generated packet data flow.                      
+////                                                                  
+//////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
+////     StartOfSim callback printing info                           
+//////////////////////////////////////////////////////////////////////
+ncsim> run
+
+the NO. 0001 IP Length is:0046 CRC-32check OK!
+the NO. 0002 IP Length is:0047 CRC-32check OK!
+the NO. 0003 IP Length is:0048 CRC-32check OK!
+the NO. 0004 IP Length is:0049 CRC-32check OK!
+the NO. ffff IP Length is:0050 CRC-32check OK!
+//////////////////////////////////////////////////////////////////////
+////            Simulation was Terminated !                           
+////      because of received packet with SN=0xffff                   
+//////////////////////////////////////////////////////////////////////
+../log/sim_succeed file has been created 

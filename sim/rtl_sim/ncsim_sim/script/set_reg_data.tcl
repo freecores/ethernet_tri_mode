@@ -43,8 +43,8 @@ set datalist {
 {RX_MIN_LENGTH                 27     0x0040    0x0040}
 {CPU_rd_addr                   28     0x0000    0x0000}
 {CPU_rd_apply                  29     0x0000    0x0000}
-{Line_loop_en                  32     0x0000    0x0000}
-{Speed                         33     0x0004    0x0004}
+{Line_loop_en                  33     0x0000    0x0000}
+{Speed                         34     0x0004    0x0004}
 }
  
 cd ../data

@@ -93,9 +93,10 @@ input                   UpdateMIIRX_DATAReg     ,// Updates MII RX_DATA register
     RegCPUData U_0_028(CPU_rd_addr              ,7'd028,16'h0000,Reset,Clk_reg,!WRB,CSB,CA,CD_in);
     RegCPUData U_0_029(CPU_rd_apply             ,7'd029,16'h0000,Reset,Clk_reg,!WRB,CSB,CA,CD_in);
 //  RegCPUData U_0_030(CPU_rd_grant             ,7'd030,16'h0000,Reset,Clk_reg,!WRB,CSB,CA,CD_in);
-//  RegCPUData U_0_031(CPU_rd_dout              ,7'd031,16'h0000,Reset,Clk_reg,!WRB,CSB,CA,CD_in);
-    RegCPUData U_0_032(Line_loop_en             ,7'd032,16'h0000,Reset,Clk_reg,!WRB,CSB,CA,CD_in);
-    RegCPUData U_0_033(Speed                    ,7'd033,16'h0004,Reset,Clk_reg,!WRB,CSB,CA,CD_in);
+//  RegCPUData U_0_031(CPU_rd_dout_l            ,7'd031,16'h0000,Reset,Clk_reg,!WRB,CSB,CA,CD_in);
+//  RegCPUData U_0_032(CPU_rd_dout_h            ,7'd033,16'h0000,Reset,Clk_reg,!WRB,CSB,CA,CD_in);
+    RegCPUData U_0_033(Line_loop_en             ,7'd034,16'h0000,Reset,Clk_reg,!WRB,CSB,CA,CD_in);
+    RegCPUData U_0_034(Speed                    ,7'd035,16'h0004,Reset,Clk_reg,!WRB,CSB,CA,CD_in);
 
 always @ (*)
         case (CA[7:1])
@@ -130,9 +131,10 @@ always @ (*)
                 7'd28:    CD_out=CPU_rd_addr                ; 
                 7'd29:    CD_out=CPU_rd_apply               ;
                 7'd30:    CD_out=CPU_rd_grant               ;
-                7'd31:    CD_out=CPU_rd_dout                ; 
-                7'd32:    CD_out=Line_loop_en               ;
-                7'd33:    CD_out=Speed                      ; 
+                7'd31:    CD_out=CPU_rd_dout[15:0]          ; 
+                7'd32:    CD_out=CPU_rd_dout[31:16]         ;                 
+                7'd33:    CD_out=Line_loop_en               ;
+                7'd34:    CD_out=Speed                      ; 
                 default:    CD_out=0                        ;
         endcase
 

@@ -17,8 +17,8 @@ variable piple
     text .l.f1.t1 -width 80 -height 40 -yscrollcommand {.l.f1.scroll set}
     
     scrollbar .l.f1.scroll -command {.l.f1.t1 yview}
-    button .l.f2.b1 -text "Exit" -com {destroy .l} -width 10
-    button .l.f2.b2 -text "Stop" -com {Stop_sim} -width 10
+    button .l.f2.b1 -text "Exit" -command {destroy .l} -width 10
+    button .l.f2.b2 -text "Stop" -command {Stop_sim} -width 10
     pack .l.f1.scroll -side right -fill y
     pack .l.f1.t1 
     pack .l.f2.b1 .l.f2.b2 -side left

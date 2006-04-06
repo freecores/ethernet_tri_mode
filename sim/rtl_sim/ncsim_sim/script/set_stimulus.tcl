@@ -71,14 +71,14 @@ to the value of "Packet number per length" }
          
     frame .stimulus.f20 
     button .stimulus.f20.1 -text "Save" -width 10 \
-        -com {  set fileid [open ../data/config.ini w 0600]
+        -command {  set fileid [open ../data/config.ini w 0600]
                 puts $fileid "$StartLength,$EndLength,$PacketNumber,$Random,$Broadcast"
                 close $fileid
                 destroy .stimulus
                 }
-    button .stimulus.f20.2 -text "Save as" -com {sti_save_as $StartLength $EndLength $PacketNumber $Random $Broadcast} -width 10
-    button .stimulus.f20.3 -text "Cancel" -com {destroy .stimulus} -width 10
-    button .stimulus.f20.4 -text "Help" -width 10 -com {print_help $help_string}
+    button .stimulus.f20.2 -text "Save as" -command {sti_save_as $StartLength $EndLength $PacketNumber $Random $Broadcast} -width 10
+    button .stimulus.f20.3 -text "Cancel" -command {destroy .stimulus} -width 10
+    button .stimulus.f20.4 -text "Help" -width 10 -command {print_help $help_string}
     pack .stimulus.f20 -fill x
     pack .stimulus.f20.1 .stimulus.f20.2 .stimulus.f20.3 .stimulus.f20.4 -side left
 }

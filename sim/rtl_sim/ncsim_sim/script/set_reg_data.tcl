@@ -104,10 +104,10 @@ for {set i 0} {$i < [llength $datalist]} {incr i} {
 }
 
 
-button .p.f2.b1 -text "Save" -width 10 -com {WriteVect CPU.vec}
-button .p.f2.b2 -text "SaveAs" -width 10 -com {WriteVect [reg_save_as]}
-button .p.f2.b3 -text "Exit" -width 10 -com {destroy .p} 
-button .p.f2.b4 -text "Help" -width 10 -com {print_help $help_strings}
+button .p.f2.b1 -text "Save" -width 10 -command {WriteVect CPU.vec}
+button .p.f2.b2 -text "SaveAs" -width 10 -command {WriteVect [reg_save_as]}
+button .p.f2.b3 -text "Exit" -width 10 -command {destroy .p} 
+button .p.f2.b4 -text "Help" -width 10 -command {print_help $help_strings}
 pack .p.f2.b1 .p.f2.b2 .p.f2.b3 .p.f2.b4 -side left
 bind .p.f2.b1 <ButtonPress> {focus .p}
 

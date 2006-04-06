@@ -13,7 +13,7 @@ button .frame.b1 -width 20 -text "set_stimulus"
 button .frame.b2 -width 20 -text "set_cpu_data"
 button .frame.b3 -width 20 -text "start_verify"
 button .frame.b4 -width 20 -text "batch_mode"
-button .frame.b40 -width 20 -text "exit" -com {cd ../../../../ ;destroy .frame}
+button .frame.b40 -width 20 -text "exit" -command {cd ../../../../ ;destroy .frame}
 
 bind .frame.b1 <Button-1> {set_stimulus}
 bind .frame.b2 <Button-1> {set_reg_data}

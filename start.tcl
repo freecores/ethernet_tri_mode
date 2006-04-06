@@ -9,9 +9,9 @@ source sim/rtl_sim/ncsim_sim/script/run_proc.tcl
 
 frame .f1
 frame .f2
-text .f1.t1 -width 60 -height 20 -font {time 12}
-button .f2.b1 -text "Quit" -width 5 -com {exit}
-button .f2.b2 -text "Next" -width 5 -com {module_conf}
+text .f1.t1 -width 60 -height 20 
+button .f2.b1 -text "Quit" -width 5 -command {exit}
+button .f2.b2 -text "Next" -width 5 -command {module_conf}
 
 pack .f1 .f2
 pack .f1.t1
@@ -109,9 +109,9 @@ proc module_conf {} {
     label       .f1.f5.lb -text "MAC_RX_FF_DEPTH" -width 30
     entry       .f1.f5.en -textvariable MAC_RX_FF_DEPTH -width 5
     
-    button .f2.b1 -width 10 -text "Save"            -com {save_header}
-    button .f2.b2 -width 10 -text "Verify"          -com {run_sim}
-    button .f2.b4 -width 10 -text "Exit"            -com {exit}
+    button .f2.b1 -width 10 -text "Save"            -command {save_header}
+    button .f2.b2 -width 10 -text "Verify"          -command {run_sim}
+    button .f2.b4 -width 10 -text "Exit"            -command {exit}
     
     pack .f1.f1.cb .f1.f1.lb -side right 
     pack .f1.f2.cb .f1.f2.lb -side right 

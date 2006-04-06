@@ -48,11 +48,11 @@ set namelist \
             set tmp [expr $i+1]
             checkbutton .b.f$i.c -variable check$i -text $tmp   -width 5 
             label       .b.f$i.l1 -text [lindex $line 0] -width $lth1 
-            button      .b.f$i.b1 -text "Change" -width 5 -com [list ChangeDescript .b.f$i.l1 $i 0]
+            button      .b.f$i.b1 -text "Change" -width 5 -command [list ChangeDescript .b.f$i.l1 $i 0]
             label       .b.f$i.l2 -text [lindex $line 1] -width $lth2
-            button      .b.f$i.b2 -text "Change" -width 5 -com [list ChangeLabel .b.f$i.l2 $i 1]
+            button      .b.f$i.b2 -text "Change" -width 5 -command [list ChangeLabel .b.f$i.l2 $i 1]
             label       .b.f$i.l3 -text [lindex $line 2] -width $lth3
-            button      .b.f$i.b3 -text "Change" -width 5 -com [list ChangeLabel .b.f$i.l3 $i 2]
+            button      .b.f$i.b3 -text "Change" -width 5 -command [list ChangeLabel .b.f$i.l3 $i 2]
             pack .b.f$i
             pack .b.f$i.c .b.f$i.l1 .b.f$i.b1 .b.f$i.l2 .b.f$i.b2  .b.f$i.l3 .b.f$i.b3 -side left
             incr i
@@ -61,8 +61,8 @@ set namelist \
 
     frame .b.f102
     button .b.f102.b1 -text "Start Verify"  -width 10 
-    button .b.f102.b2 -text "Save"          -width 10 -com {save_batch_data}
-    button .b.f102.b3 -text "Exit"          -width 10 -com {destroy .b}
+    button .b.f102.b2 -text "Save"          -width 10 -command {save_batch_data}
+    button .b.f102.b3 -text "Exit"          -width 10 -command {destroy .b}
     pack .b.f102
     pack .b.f102.b1 .b.f102.b2 .b.f102.b3 -side left
     bind .b.f102.b1 <ButtonPress> {create_index $i}
@@ -127,7 +127,7 @@ proc ChangeDescript {target_label y x} {
     set newy $y
     set newx $x
     entry .tmp.en -width 20 -textvariable value
-    button .tmp.b -width 5 -text "Apply" -com {destroy .tmp}
+    button .tmp.b -width 5 -text "Apply" -command {destroy .tmp}
     button .tmp.b1 -width 5 -text "quit"  
     bind .tmp.b <ButtonPress> {ChangeDescriptApply $target $newy $newx $value}
 

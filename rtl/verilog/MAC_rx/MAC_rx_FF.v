@@ -39,6 +39,9 @@
 // CVS Revision History                                               
 //                                                                    
 // $Log: not supported by cvs2svn $
+// Revision 1.3  2006/01/19 14:07:54  maverickist
+// verification is complete.
+//
 // Revision 1.3  2005/12/16 06:44:16  Administrator
 // replaced tab with space.
 // passed 9.6k length frame test.
@@ -166,6 +169,9 @@ reg             Rx_mac_sop_tmp_dl1;
 reg [35:0]      Dout_dl1;
 reg [4:0]       Fifo_data_count;
 reg             Rx_mac_pa_tmp       ;
+
+reg [4:0]       Rx_Hwmark_pl        ;
+reg [4:0]       Rx_Lwmark_pl        ;
 integer         i                   ;
 //******************************************************************************
 //domain Clk_MAC,write data to dprom.a-port for write
@@ -512,13 +518,25 @@ always @ (posedge Clk_SYS or posedge Reset)
         Fifo_data_count     <=0;                                                                    
     else                                                                                            
         Fifo_data_count     <=Add_wr_ungray[`MAC_RX_FF_DEPTH-1:`MAC_RX_FF_DEPTH-5]-Add_rd[`MAC_RX_FF_DEPTH-1:`MAC_RX_FF_DEPTH-5]; 
+
+always @ (posedge Clk_SYS or posedge Reset)                                                         
+    if (Reset) 
+        begin
+        Rx_Hwmark_pl        <=0;
+        Rx_Lwmark_pl        <=0;
+        end
+    else
+        begin
+        Rx_Hwmark_pl        <=Rx_Hwmark;
+        Rx_Lwmark_pl        <=Rx_Lwmark;
+        end   
         
 always @ (posedge Clk_SYS or posedge Reset)
     if (Reset)  
         Rx_mac_ra   <=0;
-    else if (Packet_number_inFF==0&&Fifo_data_count<=Rx_Lwmark)
+    else if (Packet_number_inFF==0&&Fifo_data_count<=Rx_Lwmark_pl)
         Rx_mac_ra   <=0;
-    else if (Packet_number_inFF>=1||Fifo_data_count>=Rx_Hwmark)
+    else if (Packet_number_inFF>=1||Fifo_data_count>=Rx_Hwmark_pl)
         Rx_mac_ra   <=1;
 
         

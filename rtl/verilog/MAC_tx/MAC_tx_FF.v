@@ -39,6 +39,9 @@
 // CVS Revision History                                               
 //                                                                    
 // $Log: not supported by cvs2svn $
+// Revision 1.3  2006/01/19 14:07:54  maverickist
+// verification is complete.
+//
 // Revision 1.3  2005/12/16 06:44:18  Administrator
 // replaced tab with space.
 // passed 9.6k length frame test.
@@ -190,6 +193,9 @@ reg             Add_rd_reg_rdy_tmp      ;
 reg             Add_rd_reg_rdy          ;   
 reg             Add_rd_reg_rdy_dl1      ;   
 reg             Add_rd_reg_rdy_dl2      ;
+reg [4:0]       Tx_Hwmark_pl            ;
+reg [4:0]       Tx_Lwmark_pl            ;
+
 integer         i                       ;
 //******************************************************************************
 //write data to from FF .
@@ -420,13 +426,24 @@ always @ (posedge Clk_SYS or posedge Reset)
     else 
         Fifo_ra_tmp <=0;
 
+always @ (posedge Clk_SYS or posedge Reset)
+    if (Reset)
+        begin 
+        Tx_Hwmark_pl        <=0;
+        Tx_Lwmark_pl        <=0;    
+        end
+    else
+        begin 
+        Tx_Hwmark_pl        <=Tx_Hwmark;
+        Tx_Lwmark_pl        <=Tx_Lwmark;    
+        end    
     
 always @ (posedge Clk_SYS or posedge Reset)
     if (Reset)
         Tx_mac_wa   <=0;  
-    else if (Fifo_data_count>=Tx_Hwmark)
+    else if (Fifo_data_count>=Tx_Hwmark_pl)
         Tx_mac_wa   <=0;
-    else if (Fifo_data_count<Tx_Lwmark)
+    else if (Fifo_data_count<Tx_Lwmark_pl)
         Tx_mac_wa   <=1;
 
 //******************************************************************************

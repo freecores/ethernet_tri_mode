@@ -20,7 +20,7 @@ pack .f2.b1 .f2.b2 -side left
 set strings \
 {Hi guys,
     Thanks for your interest about this tri-speed ethernet MAC controller.
-Sine this project was created at 25-Nov-2005,I put almost all my free time
+Since this project was created at 25-Nov-2005,I put almost all my free time
 on this project.I am exhausted for this two month's extra work.If you think
 this project is useful,let me know that and i will feel much better. 
 

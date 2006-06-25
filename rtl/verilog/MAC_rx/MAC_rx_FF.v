@@ -39,6 +39,9 @@
 // CVS Revision History                                               
 //                                                                    
 // $Log: not supported by cvs2svn $
+// Revision 1.4  2006/05/28 05:09:20  maverickist
+// no message
+//
 // Revision 1.3  2006/01/19 14:07:54  maverickist
 // verification is complete.
 //
@@ -136,7 +139,11 @@ reg             Wr_en;
 reg             Wr_en_tmp;
 reg             Wr_en_ptr;
 wire[`MAC_TX_FF_DEPTH-1:0]       Add_wr_pluse;
+wire[`MAC_TX_FF_DEPTH-1:0]       Add_wr_pluse4;
+wire[`MAC_TX_FF_DEPTH-1:0]       Add_wr_pluse3;
+wire[`MAC_TX_FF_DEPTH-1:0]       Add_wr_pluse2;
 reg             Full;
+reg             Almost_full;
 reg             Empty /* synthesis syn_keep=1 */;
 reg [3:0]       Current_state /* synthesis syn_keep=1 */;
 reg [3:0]       Next_state;
@@ -169,7 +176,10 @@ reg             Rx_mac_sop_tmp_dl1;
 reg [35:0]      Dout_dl1;
 reg [4:0]       Fifo_data_count;
 reg             Rx_mac_pa_tmp       ;
-
+reg             Add_wr_jump_tmp     ;
+reg             Add_wr_jump_tmp_pl1 ;
+reg             Add_wr_jump         ;
+reg             Add_wr_jump_rd_pl1  ;
 reg [4:0]       Rx_Hwmark_pl        ;
 reg [4:0]       Rx_Lwmark_pl        ;
 integer         i                   ;
@@ -277,6 +287,11 @@ always @ (posedge Clk_MAC or posedge Reset)
 			Add_rd_ungray[i]	=Add_rd_ungray[i+1]^Add_rd_gray_dl1[i];	
 		end        
 assign          Add_wr_pluse=Add_wr+1;
+assign		Add_wr_pluse4=Add_wr+4;
+assign		Add_wr_pluse3=Add_wr+3;
+assign		Add_wr_pluse2=Add_wr+2;
+
+			              
 
 always @ (posedge Clk_MAC or posedge Reset)
     if (Reset)
@@ -286,7 +301,19 @@ always @ (posedge Clk_MAC or posedge Reset)
     else
         Full    <=0;
 
-assign      Fifo_full =Full;
+always @ (posedge Clk_MAC or posedge Reset)
+	if (Reset)
+		Almost_full	<=0;
+	else if (Add_wr_pluse4==Add_rd_ungray||
+	         Add_wr_pluse3==Add_rd_ungray||
+	         Add_wr_pluse2==Add_rd_ungray||
+	         Add_wr_pluse==Add_rd_ungray
+	         )
+		Almost_full	<=1;
+	else
+		Almost_full	<=0;		
+
+assign		Fifo_full =Almost_full;
 
 //
 always @ (posedge Clk_MAC or posedge Reset)
@@ -297,6 +324,28 @@ always @ (posedge Clk_MAC or posedge Reset)
     else if (Wr_en&&!Full)
         Add_wr  <=Add_wr +1;
         
+always @ (posedge Clk_MAC or posedge Reset)
+	if (Reset)
+	    Add_wr_jump_tmp <=0;
+	else if (Current_state==State_err_end)
+	    Add_wr_jump_tmp <=1;
+	else
+	    Add_wr_jump_tmp <=0;
+
+always @ (posedge Clk_MAC or posedge Reset)
+	if (Reset)
+	    Add_wr_jump_tmp_pl1 <=0;
+	else
+	    Add_wr_jump_tmp_pl1 <=Add_wr_jump_tmp;	 
+	    
+always @ (posedge Clk_MAC or posedge Reset)
+	if (Reset)
+	    Add_wr_jump <=0;
+	else if (Current_state==State_err_end)
+	    Add_wr_jump <=1;
+	else if (Add_wr_jump_tmp_pl1)
+	    Add_wr_jump <=0;	       		
+		
 //
 always @ (posedge Clk_MAC or posedge Reset)
     if (Reset)
@@ -452,8 +501,10 @@ always @ (posedge Clk_SYS or posedge Reset)
 always @ (Current_state_SYS or Rx_mac_rd or Rx_mac_ra or Dout or Empty)
     case (Current_state_SYS)
         SYS_idle:
-            if (Rx_mac_rd&&Rx_mac_ra)
+			if (Rx_mac_rd&&Rx_mac_ra&&!Empty)
                 Next_state_SYS  =SYS_read;
+		    else if(Rx_mac_rd&&Rx_mac_ra&&Empty)
+		        Next_state_SYS	=FF_emtpy_err;
             else
                 Next_state_SYS  =Current_state_SYS;
         SYS_read:
@@ -510,7 +561,7 @@ always @ (posedge Clk_SYS or posedge Reset)
         Packet_number_inFF      <=0;
     else if (Packet_number_add_edge&&!Packet_number_sub)
         Packet_number_inFF      <=Packet_number_inFF + 1;
-    else if (!Packet_number_add_edge&&Packet_number_sub)
+	else if (!Packet_number_add_edge&&Packet_number_sub&&Packet_number_inFF!=0)
         Packet_number_inFF      <=Packet_number_inFF - 1;
 
 always @ (posedge Clk_SYS or posedge Reset)                                                         
@@ -567,8 +618,14 @@ always @ (posedge Clk_SYS or posedge Reset)
             
 always @ (posedge Clk_SYS or posedge Reset)
     if (Reset)
-        Add_wr_ungray       =0;
+        Add_wr_jump_rd_pl1  <=0;
     else        
+        Add_wr_jump_rd_pl1  <=Add_wr_jump;	
+            
+always @ (posedge Clk_SYS or posedge Reset)
+    if (Reset)
+        Add_wr_ungray       =0;
+    else if (!Add_wr_jump_rd_pl1)       
 		begin
 		Add_wr_ungray[`MAC_RX_FF_DEPTH-1]	=Add_wr_gray_dl1[`MAC_RX_FF_DEPTH-1];	
 		for (i=`MAC_RX_FF_DEPTH-2;i>=0;i=i-1)

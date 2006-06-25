@@ -39,6 +39,9 @@
 // CVS Revision History                                               
 //                                                                    
 // $Log: not supported by cvs2svn $
+// Revision 1.4  2006/05/28 05:09:20  maverickist
+// no message
+//
 // Revision 1.3  2006/01/19 14:07:54  maverickist
 // verification is complete.
 //
@@ -195,6 +198,10 @@ reg             Add_rd_reg_rdy_dl1      ;
 reg             Add_rd_reg_rdy_dl2      ;
 reg [4:0]       Tx_Hwmark_pl            ;
 reg [4:0]       Tx_Lwmark_pl            ;
+reg             Add_rd_jump_tmp         ;
+reg             Add_rd_jump_tmp_pl1     ;
+reg             Add_rd_jump             ;
+reg             Add_rd_jump_wr_pl1      ;
 
 integer         i                       ;
 //******************************************************************************
@@ -313,8 +320,14 @@ always @ (posedge Clk_SYS or posedge Reset)
                     
 always @ (posedge Clk_SYS or posedge Reset)
     if (Reset)
-        Add_rd_ungray       =0;
+        Add_rd_jump_wr_pl1  <=0;
     else        
+        Add_rd_jump_wr_pl1  <=Add_rd_jump;
+                    
+always @ (posedge Clk_SYS or posedge Reset)
+    if (Reset)
+        Add_rd_ungray       =0;
+    else if (!Add_rd_jump_wr_pl1)       
 		begin
 		Add_rd_ungray[`MAC_RX_FF_DEPTH-1]	=Add_rd_gray_dl1[`MAC_RX_FF_DEPTH-1];	
 		for (i=`MAC_RX_FF_DEPTH-2;i>=0;i=i-1)
@@ -675,6 +688,28 @@ always @ (posedge Clk_MAC or posedge Reset)
     else if (Add_rd_add)
         Add_rd          <= Add_rd + 1;  
                     
+always @ (posedge Clk_MAC or posedge Reset)
+	if (Reset)
+	    Add_rd_jump_tmp <=0;
+	else if (Current_state_MAC==MAC_retry)
+	    Add_rd_jump_tmp <=1;
+	else
+	    Add_rd_jump_tmp <=0;
+
+always @ (posedge Clk_MAC or posedge Reset)
+	if (Reset)
+	    Add_rd_jump_tmp_pl1 <=0;
+	else
+	    Add_rd_jump_tmp_pl1 <=Add_rd_jump_tmp;	 
+	    
+always @ (posedge Clk_MAC or posedge Reset)
+	if (Reset)
+	    Add_rd_jump <=0;
+	else if (Current_state_MAC==MAC_retry)
+	    Add_rd_jump <=1;
+	else if (Add_rd_jump_tmp_pl1)
+	    Add_rd_jump <=0;	
+	    					
 //gen Fifo_data 
 
         

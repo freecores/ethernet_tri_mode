@@ -39,6 +39,9 @@
 // CVS Revision History                                               
 //                                                                    
 // $Log: not supported by cvs2svn $
+// Revision 1.3  2006/01/19 14:07:54  maverickist
+// verification is complete.
+//
 // Revision 1.3  2005/12/16 06:44:17  Administrator
 // replaced tab with space.
 // passed 9.6k length frame test.
@@ -180,6 +183,8 @@ reg [7:0]       TxD_tmp             ;
 reg             TxEn_tmp            ;   
 reg [15:0]      Tx_pkt_length_rmon  ;
 reg             Tx_apply_rmon       ;
+reg             Tx_apply_rmon_tmp   ;
+reg             Tx_apply_rmon_tmp_pl1;
 reg [2:0]       Tx_pkt_err_type_rmon;   
 reg [3:0]       RetryCnt            ;
 reg             Random_init         ;
@@ -206,7 +211,6 @@ reg [7:0]       pause_counter       ;
 reg             pause_quanta_sub    ;
 reg             pause_frame_send_en_dl1 ;               
 reg [15:0]      pause_quanta_set_dl1    ;
-reg [4:0]       send_pause_frame_counter    ;
 reg             xoff_gen_complete   ;
 reg             xon_gen_complete    ;
 //******************************************************************************    
@@ -230,14 +234,6 @@ assign Collision=TxEn&CRS;
 
 always @(posedge Clk or posedge Reset)
     if (Reset)
-        send_pause_frame_counter    <=0;
-    else if(Current_state!=StateSendPauseFrame)
-        send_pause_frame_counter    <=0;
-    else
-        send_pause_frame_counter    <=send_pause_frame_counter +1;
-
-always @(posedge Clk or posedge Reset)
-    if (Reset)
         pause_counter   <=0;
     else if (Current_state!=StatePause)
         pause_counter   <=0;
@@ -247,9 +243,9 @@ always @(posedge Clk or posedge Reset)
 always @(posedge Clk or posedge Reset)
     if (Reset)
         IPLengthCounter     <=0;
-    else if (Current_state==StateSwitchNext)
+    else if (Current_state==StateDefer)
         IPLengthCounter     <=0;    
-    else if (IPLengthCounter!=8'hff&&(Current_state==StateData||Current_state==StatePAD))
+    else if (IPLengthCounter!=8'hff&&(Current_state==StateData||Current_state==StateSendPauseFrame||Current_state==StatePAD))
         IPLengthCounter     <=IPLengthCounter+1;
 
 always @(posedge Clk or posedge Reset)
@@ -276,7 +272,7 @@ always @ (*)
             StateIFG:
                 if (!FullDuplex&&CRS)
                     Next_state=StateDefer;
-                else if ((FullDuplex&&IFG_counter==IFGset-4)||(!FullDuplex&&!CRS&&IFG_counter==IFGset-4))//去掉一些耽搁的时间
+                else if ((FullDuplex&&IFG_counter==IFGset-4)||(!FullDuplex&&!CRS&&IFG_counter==IFGset-4))//remove some additional time
                     Next_state=StateIdle;
                 else
                     Next_state=Current_state;           
@@ -297,7 +293,7 @@ always @ (*)
             StatePreamble:
                 if (!FullDuplex&&Collision)
                     Next_state=StateJam;
-                else if ((FullDuplex&&Preamble_counter==7)||(!FullDuplex&&!Collision&&Preamble_counter==7))
+                else if ((FullDuplex&&Preamble_counter==6)||(!FullDuplex&&!Collision&&Preamble_counter==6))
                     Next_state=StateSFD;
                 else
                     Next_state=Current_state;
@@ -309,7 +305,7 @@ always @ (*)
                 else 
                     Next_state=StateData;
             StateSendPauseFrame:
-                if (send_pause_frame_counter==19)
+                if (IPLengthCounter==17)
                     Next_state=StatePAD;
                 else
                     Next_state=Current_state;
@@ -346,8 +342,6 @@ always @ (*)
             StateFCS:
                 if (!FullDuplex&&Collision)
                     Next_state  =StateJam;
-                else if (pause_frame_send_en_dl1&&(xoff_gen||xon_gen))
-                    Next_state  =StateDefer;
                 else if (CRC_end)
                     Next_state  =StateSwitchNext;
                 else
@@ -421,7 +415,7 @@ always @(Current_state)
 assign Frame_data=TxD_tmp;
 
 always @(Current_state)
-    if (Current_state==StateData||Current_state==StatePAD)
+    if (Current_state==StateData||Current_state==StateSendPauseFrame||Current_state==StatePAD)
         Data_en     =1;
     else
         Data_en     =0;
@@ -483,22 +477,26 @@ always @(*)
             else
                 TxD_tmp =Fifo_data;
         StateSendPauseFrame:
-            if (Src_MAC_ptr)       
+            if (Src_MAC_ptr&&MAC_tx_add_en)       
                 TxD_tmp =MAC_tx_addr_data;
             else 
-                case (send_pause_frame_counter)
-                    5'd0:   TxD_tmp =8'h01;
-                    5'd1:   TxD_tmp =8'h80;
-                    5'd2:   TxD_tmp =8'hc2;
-                    5'd3:   TxD_tmp =8'h00;
-                    5'd4:   TxD_tmp =8'h00;
-                    5'd5:   TxD_tmp =8'h01;
-                    5'd12:  TxD_tmp =8'h88;//type
-                    5'd13:  TxD_tmp =8'h08;//
-                    5'd14:  TxD_tmp =8'h00;//opcode
-                    5'd15:  TxD_tmp =8'h01;
-                    5'd16:  TxD_tmp =pause_quanta_set_dl1[15:8];
-                    5'd17:  TxD_tmp =pause_quanta_set_dl1[7:0];
+                case (IPLengthCounter)
+                    7'd0:   TxD_tmp =8'h01;
+                    7'd1:   TxD_tmp =8'h80;
+                    7'd2:   TxD_tmp =8'hc2;
+                    7'd3:   TxD_tmp =8'h00;
+                    7'd4:   TxD_tmp =8'h00;
+                    7'd5:   TxD_tmp =8'h01;
+                    7'd12:  TxD_tmp =8'h88;//type
+                    7'd13:  TxD_tmp =8'h08;//
+                    7'd14:  TxD_tmp =8'h00;//opcode
+                    7'd15:  TxD_tmp =8'h01;
+                    7'd16:  TxD_tmp =xon_gen?8'b0:pause_quanta_set_dl1[15:8];
+                    7'd17:  TxD_tmp =xon_gen?8'b0:pause_quanta_set_dl1[7:0];
+//                    7'd60:  TxD_tmp =8'h26;
+//                    7'd61:  TxD_tmp =8'h6b;
+//                    7'd62:  TxD_tmp =8'hae;
+//                    7'd63:  TxD_tmp =8'h0a;
                     default:TxD_tmp =0;
                 endcase
         
@@ -530,8 +528,24 @@ always @ (posedge Clk or posedge Reset)
         Tx_pkt_length_rmon      <=0;
     else if (Current_state==StateSFD)
         Tx_pkt_length_rmon      <=0;
-    else if (Current_state==StateData)
+    else if (Current_state==StateData||Current_state==StateSendPauseFrame||Current_state==StatePAD||Current_state==StateFCS)
         Tx_pkt_length_rmon      <=Tx_pkt_length_rmon+1;
+        
+always @ (posedge Clk or posedge Reset)
+    if (Reset)
+        Tx_apply_rmon_tmp       <=0;
+    else if ((Fifo_eop&&Current_state==StateJamDrop)||
+             (Fifo_eop&&Current_state==StateFFEmptyDrop)||
+             CRC_end)
+        Tx_apply_rmon_tmp       <=1;
+    else
+        Tx_apply_rmon_tmp       <=0; 
+
+always @ (posedge Clk or posedge Reset)
+    if (Reset)
+        Tx_apply_rmon_tmp_pl1   <=0;
+    else
+        Tx_apply_rmon_tmp_pl1   <=Tx_apply_rmon_tmp;
         
 always @ (posedge Clk or posedge Reset)
     if (Reset)
@@ -540,7 +554,7 @@ always @ (posedge Clk or posedge Reset)
              (Fifo_eop&&Current_state==StateFFEmptyDrop)||
              CRC_end)
         Tx_apply_rmon       <=1;
-    else
+    else if (Tx_apply_rmon_tmp_pl1)
         Tx_apply_rmon       <=0;
         
 always @ (posedge Clk or posedge Reset)
@@ -553,13 +567,13 @@ always @ (posedge Clk or posedge Reset)
     else if(Fifo_eop&&Fifo_data_err_full)
         Tx_pkt_err_type_rmon    <=3'b011;//overflow
     else if(CRC_end)
-        Tx_pkt_err_type_rmon    <=3'b100;
+        Tx_pkt_err_type_rmon    <=3'b100;//normal
         
 always @ (posedge Clk or posedge Reset)
     if (Reset)
         MAC_header_slot_tmp <=0;
     else if(Current_state==StateSFD&&Next_state==StateData)
-        MAC_header_slot_tmp <=0;    
+        MAC_header_slot_tmp <=1;    
     else
         MAC_header_slot_tmp <=0;
         
@@ -575,7 +589,7 @@ always @ (posedge Clk or posedge Reset)
     else if (Current_state==StateSendPauseFrame)
         Tx_pkt_type_rmon    <=3'b100;
     else if(MAC_header_slot)
-        Tx_pkt_type_rmon    <={1'b0,TxD_tmp};
+        Tx_pkt_type_rmon    <={1'b0,TxD[7:6]};
 
        
 always @(Tx_pkt_length_rmon)

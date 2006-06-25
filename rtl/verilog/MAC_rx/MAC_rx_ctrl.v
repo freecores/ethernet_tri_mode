@@ -39,6 +39,9 @@
 // CVS Revision History                                               
 //                                                                    
 // $Log: not supported by cvs2svn $
+// Revision 1.3  2006/01/19 14:07:54  maverickist
+// verification is complete.
+//
 // Revision 1.3  2005/12/16 06:44:17  Administrator
 // replaced tab with space.
 // passed 9.6k length frame test.
@@ -162,6 +165,8 @@ reg             Fifo_data_err;
 reg             CRC_en;
 reg             CRC_init;
 reg             Rx_apply_rmon;
+reg             Rx_apply_rmon_tmp;
+reg             Rx_apply_rmon_tmp_pl1;
 reg [2:0]       Rx_pkt_err_type_rmon;
 reg             MAC_add_en;
 reg [2:0]       Rx_pkt_type_rmon;
@@ -266,7 +271,7 @@ always @ (*)
             State_FFFullErrEnd:
                         Next_state  =State_FFFullDrop;                                        
             State_IFG:                                  
-                    if (IFG_counter==RX_IFG_SET)        
+                    if (IFG_counter==RX_IFG_SET-4)   //remove some additional time     
                         Next_state  =State_idle;        
                     else                                
                         Next_state  =Current_state;     
@@ -333,7 +338,7 @@ always @ (posedge Clk or posedge Reset)
     else if (Current_state==State_SFD)
         Frame_length_counter        <=1;
     else if (Current_state==State_data)
-        Frame_length_counter        <=Frame_length_counter+ 1;
+        Frame_length_counter        <=Frame_length_counter+ 1'b1;
         
 always @ (Frame_length_counter or RX_MIN_LENGTH)
     if (Frame_length_counter<RX_MIN_LENGTH)
@@ -347,7 +352,22 @@ always @ (*)
     else
         Too_long    =0;
         
-assign Rx_pkt_length_rmon=Frame_length_counter;
+assign Rx_pkt_length_rmon=Frame_length_counter-1'b1;
+
+always @ (posedge Clk or posedge Reset)
+    if (Reset)
+        Rx_apply_rmon_tmp   <=0; 
+    else if (Current_state==State_OkEnd||Current_state==State_ErrEnd
+        ||Current_state==State_CRCErrEnd||Current_state==State_FFFullErrEnd)
+        Rx_apply_rmon_tmp   <=1;        
+    else
+        Rx_apply_rmon_tmp   <=0; 
+        
+always @ (posedge Clk or posedge Reset)
+    if (Reset)
+        Rx_apply_rmon_tmp_pl1   <=0;
+    else
+        Rx_apply_rmon_tmp_pl1   <=Rx_apply_rmon_tmp;        
 
 always @ (posedge Clk or posedge Reset)
     if (Reset)
@@ -355,7 +375,7 @@ always @ (posedge Clk or posedge Reset)
     else if (Current_state==State_OkEnd||Current_state==State_ErrEnd
         ||Current_state==State_CRCErrEnd||Current_state==State_FFFullErrEnd)
         Rx_apply_rmon   <=1;        
-    else
+    else if (Rx_apply_rmon_tmp_pl1)
         Rx_apply_rmon   <=0; 
         
 always @ (posedge Clk or posedge Reset)

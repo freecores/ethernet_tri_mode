@@ -39,6 +39,9 @@
 // CVS Revision History                                               
 //                                                                    
 // $Log: not supported by cvs2svn $
+// Revision 1.3  2006/01/19 14:07:55  maverickist
+// verification is complete.
+//
 // Revision 1.2  2005/12/16 06:44:19  Administrator
 // replaced tab with space.
 // passed 9.6k length frame test.
@@ -100,14 +103,14 @@ output  [31:0]  CPU_rd_dout         ;
 //internal signals                                                              
 //******************************************************************************
 
-parameter       StateCPU        =5'd00;
-parameter       StateMAC0       =5'd01;
-parameter       StateMAC1       =5'd02;
+parameter       StateCPU        =4'd00;
+parameter       StateMAC0       =4'd01;
+parameter       StateMAC1       =4'd02;
 
 
-reg [4:0]       CurrentState;
-reg [4:0]       NextState;
-reg [4:0]       CurrentState_reg;
+reg [3:0]       CurrentState /* synthesys syn_keep=1 */;
+reg [3:0]       NextState;
+reg [3:0]       CurrentState_reg;
 
 reg [4:0]       StepCounter;
 reg [31:0]      DoutaReg;

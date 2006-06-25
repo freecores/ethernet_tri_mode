@@ -39,6 +39,9 @@
 // CVS Revision History                                               
 //                                                                    
 // $Log: not supported by cvs2svn $
+// Revision 1.3  2006/01/19 14:07:55  maverickist
+// verification is complete.
+//
 // Revision 1.2  2005/12/16 06:44:19  Administrator
 // replaced tab with space.
 // passed 9.6k length frame test.
@@ -80,14 +83,14 @@ output          Reg_drop_apply      ;
 //******************************************************************************
 //internal signals                                                              
 //******************************************************************************
-parameter       StateIdle       =5'b00001;
-parameter       StatePktLength  =5'b00010;
-parameter       StatePktNumber  =5'b00100;
-parameter       StatePktType    =5'b01000;
-parameter       StatePktRange   =5'b10000;
+parameter       StateIdle       =4'd0;
+parameter       StatePktLength  =4'd1;
+parameter       StatePktNumber  =4'd2;
+parameter       StatePktType    =4'd3;
+parameter       StatePktRange   =4'd4;
 
-reg [4:0]       CurrentState;
-reg [4:0]       NextState;
+reg [3:0]       CurrentState /* synthesys syn_keep=1 */;
+reg [3:0]       NextState;
     
 reg [2:0]       PktTypeReg      ;
 reg [15:0]      PktLengthReg    ;

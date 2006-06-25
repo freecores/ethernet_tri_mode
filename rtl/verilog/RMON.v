@@ -39,6 +39,9 @@
 // CVS Revision History                                               
 //                                                                    
 // $Log: not supported by cvs2svn $
+// Revision 1.3  2006/01/19 14:07:53  maverickist
+// verification is complete.
+//
 // Revision 1.2  2005/12/16 06:44:16  Administrator
 // replaced tab with space.
 // passed 9.6k length frame test.
@@ -168,10 +171,10 @@ RMON_dpram U_Rx_RMON_dpram(
 //port-a for Rmon       (//port-a for Rmon          ),
 .Addra                  (Addra                      ),
 .Dina                   (Dina                       ),
-.Douta                  (Douta                      ),
+.Douta                  (                           ),
 .Wea                    (Wea                        ),
 //port-b for CPU        (//port-b for CPU           ),
-.Addrb                  (RxAddrb                    ),
-.Doutb                  (RxDoutb                    ));
+.Addrb                  (Addra                      ),
+.Doutb                  (Douta                      ));
 
 endmodule

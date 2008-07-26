@@ -39,6 +39,9 @@
 // CVS Revision History                                               
 //                                                                    
 // $Log: not supported by cvs2svn $
+// Revision 1.3  2006/01/19 14:07:52  maverickist
+// verification is complete.
+//
 // Revision 1.2  2005/12/16 06:44:13  Administrator
 // replaced tab with space.
 // passed 9.6k length frame test.
@@ -100,8 +103,8 @@ wire            MAC_rx_add_chk_err  ;
 wire            broadcast_ptr           ;
 wire            broadcast_drop          ;
                 //flow_control signals  
-wire    [15:0]  pause_quanta        ;   
-wire            pause_quanta_val    ;
+//wire    [15:0]  pause_quanta        ;   
+//wire            pause_quanta_val    ;
                 //MAC_rx_ctrl interface 
 wire    [7:0]   Fifo_data       ;
 wire            Fifo_data_en    ;

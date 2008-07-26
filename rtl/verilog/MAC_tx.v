@@ -39,6 +39,9 @@
 // CVS Revision History                                               
 //                                                                    
 // $Log: not supported by cvs2svn $
+// Revision 1.3  2006/01/19 14:07:53  maverickist
+// verification is complete.
+//
 // Revision 1.2  2005/12/16 06:44:14  Administrator
 // replaced tab with space.
 // passed 9.6k length frame test.
@@ -83,7 +86,7 @@ input           xoff_cpu            ,
 input           xon_cpu             ,
                 //MAC_rx_flow       ,
 input   [15:0]  pause_quanta        ,   
-input           pause_quanta_val    ,   
+input           pause_quanta_val       
 );
 //******************************************************************************        
 //internal signals                                                              

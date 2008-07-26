@@ -39,6 +39,9 @@
 // CVS Revision History                                               
 //                                                                    
 // $Log: not supported by cvs2svn $
+// Revision 1.2  2006/01/19 14:07:50  maverickist
+// verification is complete.
+//
 // Revision 1.1.1.1  2005/12/13 01:51:44  Administrator
 // no message
 // 
@@ -69,8 +72,8 @@ input	[2:0]	Speed
 //////////////////////////////////////////////////////////////////////
 reg				Clk_25m			;//used for 100 Mbps mode
 reg				Clk_2_5m		;//used for 10 Mbps mode
-wire			Rx_clk			;
-wire			Tx_clk			;//used only in MII mode
+//wire			Rx_clk			;
+//wire			Tx_clk			;//used only in MII mode
 //////////////////////////////////////////////////////////////////////
 always 
 	begin

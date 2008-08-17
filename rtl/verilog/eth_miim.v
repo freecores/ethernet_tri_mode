@@ -41,6 +41,9 @@
 // CVS Revision History
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.3  2006/01/19 14:07:53  maverickist
+// verification is complete.
+//
 // Revision 1.1.1.1  2005/12/13 01:51:44  Administrator
 // no message
 //
@@ -107,7 +110,9 @@ module eth_miim
   WCtrlData,
   RStat,
   ScanStat,
-  Mdio,
+  Mdo,   
+  MdoEn, 
+  Mdi,   
   Mdc,
   Busy,
   Prsd,
@@ -130,7 +135,9 @@ input         NoPre;              // No Preamble (no 32-bit preamble)
 input         WCtrlData;          // Write Control Data operation
 input         RStat;              // Read Status operation
 input         ScanStat;           // Scan Status operation
-inout         Mdio;                // MII Management Data In
+output        Mdo;                // MII Management Data Output
+output        MdoEn;              // MII Management Data Output Enable
+input         Mdi;
 
 output        Mdc;                // MII Management Data Clock
 
@@ -199,12 +206,12 @@ reg     [1:0] LatchByte;          // Latch Byte selects which part of Read Statu
 
 reg           UpdateMIIRX_DATAReg;// Updates MII RX_DATA register with read data
 
-wire        Mdo;                // MII Management Data Output
-wire        MdoEn;              // MII Management Data Output Enable
-wire		Mdi;
 
+
+/*
 assign  Mdi=Mdio;
 assign  Mdio=MdoEn?Mdo:1'bz;
+*/
 
 
 

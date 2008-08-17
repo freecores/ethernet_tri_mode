@@ -140,8 +140,7 @@ always @ (posedge Clk_reg or posedge Reset)
                 7'd34:    CD_out<=Speed                      ; 
                 default:  CD_out<=0                          ;
         endcase
-    else
-        CD_out<=0                          ;
+
 
 endmodule   
 

@@ -39,6 +39,9 @@
 // CVS Revision History                                               
 //                                                                    
 // $Log: not supported by cvs2svn $
+// Revision 1.3  2006/11/17 17:53:07  maverickist
+// no message
+//
 // Revision 1.2  2006/01/19 14:07:50  maverickist
 // verification is complete.
 //
@@ -133,7 +136,8 @@ assign Tx_mac_BE    =operation[1:0];
 always @ (posedge Clk_user or posedge Reset)
 	if (Reset)
 		Rx_mac_rd	<=0;
-	else if(Rx_mac_ra)
+	else if(Rx_mac_ra&Rx_mac_rd==0)
+	//else if(Rx_mac_ra)
 		Rx_mac_rd	<=1;
 	else
 		Rx_mac_rd	<=0;

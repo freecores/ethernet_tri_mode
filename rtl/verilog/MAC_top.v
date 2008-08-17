@@ -39,6 +39,9 @@
 // CVS Revision History                                               
 //                                                                    
 // $Log: not supported by cvs2svn $
+// Revision 1.3  2006/01/19 14:07:52  maverickist
+// verification is complete.
+//
 // Revision 1.2  2005/12/16 06:44:13  Administrator
 // replaced tab with space.
 // passed 9.6k length frame test.
@@ -69,6 +72,10 @@ input   [31:0]  Tx_mac_data             ,
 input   [1:0]   Tx_mac_BE               ,//big endian
 input           Tx_mac_sop              ,
 input           Tx_mac_eop              ,
+                //pkg_lgth fifo
+input           Pkg_lgth_fifo_rd        ,
+output          Pkg_lgth_fifo_ra        ,
+output  [15:0]  Pkg_lgth_fifo_data      ,
                 //Phy interface          
                 //Phy interface         
 output          Gtx_clk                 ,//used only in GMII mode
@@ -89,7 +96,9 @@ input   [15:0]  CD_in                   ,
 output  [15:0]  CD_out                  ,
 input   [7:0]   CA                      ,                
                 //mdx
-inout           Mdio                    ,// MII Management Data In
+output          Mdo,                // MII Management Data Output
+output          MdoEn,              // MII Management Data Output Enable
+input           Mdi,
 output          Mdc                      // MII Management Data Clock       
 
 );                       
@@ -136,7 +145,7 @@ wire    		MAC_tx_add_prom_wr		;
 wire    		tx_pause_en				;       
 wire    		xoff_cpu	        	;       
 wire    		xon_cpu	            	;       
-		        		//Rx host interface 	 
+		        //Rx host interface 	 
 wire    		MAC_rx_add_chk_en		;       
 wire    [7:0]	MAC_rx_add_prom_data	;       
 wire    [2:0]	MAC_rx_add_prom_add		;       
@@ -175,6 +184,11 @@ wire         	RStatStart         		;
 wire         	UpdateMIIRX_DATAReg		;
 wire    [15:0]  broadcast_bucket_depth              ;
 wire    [15:0]  broadcast_bucket_interval           ;
+wire            Pkg_lgth_fifo_empty;
+
+reg             rx_pkg_lgth_fifo_wr_tmp;
+reg             rx_pkg_lgth_fifo_wr_tmp_pl1;
+reg             rx_pkg_lgth_fifo_wr;
               
 //******************************************************************************
 //internal signals                                                              
@@ -260,6 +274,47 @@ MAC_tx U_MAC_tx(
 .pause_quanta_val           (pause_quanta_val           )
 );
 
+
+assign Pkg_lgth_fifo_ra=!Pkg_lgth_fifo_empty;
+always @ (posedge Reset or posedge MAC_rx_clk_div)
+    if (Reset)
+        rx_pkg_lgth_fifo_wr_tmp <=0;    
+    else if(Rx_apply_rmon&&Rx_pkt_err_type_rmon==3'b100)
+        rx_pkg_lgth_fifo_wr_tmp <=1;
+    else
+        rx_pkg_lgth_fifo_wr_tmp <=0;  
+
+always @ (posedge Reset or posedge MAC_rx_clk_div)
+    if (Reset)
+        rx_pkg_lgth_fifo_wr_tmp_pl1 <=0;    
+    else
+        rx_pkg_lgth_fifo_wr_tmp_pl1 <=rx_pkg_lgth_fifo_wr_tmp;         
+
+always @ (posedge Reset or posedge MAC_rx_clk_div)
+    if (Reset)
+        rx_pkg_lgth_fifo_wr <=0;    
+    else if(rx_pkg_lgth_fifo_wr_tmp&!rx_pkg_lgth_fifo_wr_tmp_pl1)
+        rx_pkg_lgth_fifo_wr <=1; 
+    else
+        rx_pkg_lgth_fifo_wr <=0; 
+
+afifo U_rx_pkg_lgth_fifo (
+.din                        (RX_APPEND_CRC?Rx_pkt_length_rmon:Rx_pkt_length_rmon-4),
+.wr_en                      (rx_pkg_lgth_fifo_wr        ),
+.wr_clk                     (MAC_rx_clk_div             ),
+.rd_en                      (Pkg_lgth_fifo_rd           ),
+.rd_clk                     (Clk_user                   ),
+.ainit                      (Reset                      ),
+.dout                       (Pkg_lgth_fifo_data         ),
+.full                       (                           ),
+.almost_full                (                           ),
+.empty                      (Pkg_lgth_fifo_empty        ),
+.wr_count                   (                           ),
+.rd_count                   (                           ),
+.rd_ack                     (                           ),
+.wr_ack                     (                           ));
+
+
 RMON U_RMON(
 .Clk                        (Clk_reg                    ),
 .Reset                      (Reset                      ),
@@ -333,7 +388,9 @@ eth_miim U_eth_miim(
 .WCtrlData                  (WCtrlData                  ),  
 .RStat                      (RStat                      ),  
 .ScanStat                   (ScanStat                   ),  
-.Mdio                       (Mdio                       ),  
+.Mdo                        (Mdo                        ),
+.MdoEn                      (MdoEn                      ),
+.Mdi                        (Mdi                        ),
 .Mdc                        (Mdc                        ),  
 .Busy                       (Busy                       ),  
 .Prsd                       (Prsd                       ),  

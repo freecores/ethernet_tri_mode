@@ -39,6 +39,9 @@
 // CVS Revision History                                               
 //                                                                    
 // $Log: not supported by cvs2svn $
+// Revision 1.5  2006/06/25 04:58:56  maverickist
+// no message
+//
 // Revision 1.4  2006/05/28 05:09:20  maverickist
 // no message
 //
@@ -128,6 +131,7 @@ reg [`MAC_TX_FF_DEPTH-1:0]       Add_wr_gray_dl1;
 reg [`MAC_TX_FF_DEPTH-1:0]       Add_wr_reg;
 
 reg [`MAC_TX_FF_DEPTH-1:0]       Add_rd;
+reg [`MAC_TX_FF_DEPTH-1:0]       Add_rd_pl1;
 reg [`MAC_TX_FF_DEPTH-1:0]       Add_rd_gray;
 reg [`MAC_TX_FF_DEPTH-1:0]       Add_rd_gray_dl1;
 reg [`MAC_TX_FF_DEPTH-1:0]       Add_rd_ungray;
@@ -182,6 +186,7 @@ reg             Add_wr_jump         ;
 reg             Add_wr_jump_rd_pl1  ;
 reg [4:0]       Rx_Hwmark_pl        ;
 reg [4:0]       Rx_Lwmark_pl        ;
+reg             Addr_freshed_ptr    ;
 integer         i                   ;
 //******************************************************************************
 //domain Clk_MAC,write data to dprom.a-port for write
@@ -508,10 +513,10 @@ always @ (Current_state_SYS or Rx_mac_rd or Rx_mac_ra or Dout or Empty)
             else
                 Next_state_SYS  =Current_state_SYS;
         SYS_read:
-            if (!Rx_mac_rd)
-                Next_state_SYS  =SYS_pause;
-            else if (Dout[35])                
+            if (Dout[35])                
                 Next_state_SYS  =SYS_wait_end;
+            else if (!Rx_mac_rd)
+                Next_state_SYS  =SYS_pause;
             else if (Empty)
                 Next_state_SYS  =FF_emtpy_err;
             else
@@ -595,8 +600,20 @@ always @ (posedge Clk_SYS or posedge Reset)
 always @ (posedge Clk_SYS or posedge Reset)
     if (Reset)
         Add_rd      <=0;
-    else if (Current_state_SYS==SYS_read&&!Dout[35])  
+    else if (Current_state_SYS==SYS_read&&!(Dout[35]&&Addr_freshed_ptr))  
         Add_rd      <=Add_rd + 1;
+
+always @ (posedge Clk_SYS or posedge Reset)
+    if (Reset)
+        Add_rd_pl1  <=0;
+    else
+        Add_rd_pl1  <=Add_rd; 
+        
+always @ (*)
+    if (Add_rd_pl1==Add_rd)
+        Addr_freshed_ptr      =0;
+    else
+        Addr_freshed_ptr      =1;
 
 //
 always @ (posedge Reset or posedge Clk_SYS)
@@ -656,7 +673,7 @@ assign  Rx_mac_eop      =Dout_dl1[35];
 always @ (posedge Clk_SYS or posedge Reset) 
     if (Reset)
         Rx_mac_pa_tmp   <=0;    
-    else if (Current_state_SYS==SYS_read&&!Dout[35])         
+    else if (Current_state_SYS==SYS_read&&!(Dout[35]&&Addr_freshed_ptr))         
         Rx_mac_pa_tmp   <=1;
     else
         Rx_mac_pa_tmp   <=0;

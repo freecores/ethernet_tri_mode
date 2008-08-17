@@ -40,6 +40,9 @@
 // CVS Revision History                                               
 //                                                                    
 // $Log: not supported by cvs2svn $
+// Revision 1.3  2006/01/19 14:07:51  maverickist
+// verification is complete.
+//
 // Revision 1.2  2005/12/16 06:44:13  Administrator
 // replaced tab with space.
 // passed 9.6k length frame test.
@@ -95,7 +98,9 @@ wire    [7:0]   CA                      ;
 wire			Line_loop_en			;
 wire	[2:0]	Speed					;
 				//mii
-wire         	Mdio                	;// MII Management Data In
+wire         	Mdo                	    ;// MII Management Data out
+wire         	Mdi                	    ;// MII Management Data In
+wire         	MdoEn                	;// MII Management Data out enable
 wire        	Mdc                		;// MII Management Data Clock	
 wire            CPU_init_end            ;
 //******************************************************************************
@@ -175,7 +180,9 @@ MAC_top U_MAC_top(
 .CD_out                         (CD_out                     ),
 .CA                             (CA                         ),
  //MII interface signals        (//MII interface signals    ),
-.Mdio                	        (Mdio                	    ),
+.Mdi                	        (Mdi                	    ),
+.Mdo                	        (Mdo                	    ),
+.MdoEn                	        (MdoEn                	    ),
 .Mdc                		    (Mdc                		)
 );
 

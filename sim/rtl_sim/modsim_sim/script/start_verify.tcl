@@ -29,7 +29,7 @@ variable piple
     cd ../bin
     set compiling 1
     if {$batch==0} {
-        Run "bash sim.mod rtl -c " $output_win
+        Run "bash sim.mod runall -c " $output_win
     } elseif {[catch {open ../data/batch.dat r} fileid]} {
         $output_win insert end  "Failed open ../data/batch.dat file\n" 
     } elseif {[lindex $index 0] == "empty"} {
@@ -111,7 +111,7 @@ proc sim_next_case {} {
             $output_win insert end $saparator  
             $output_win insert end "\n \n \n"  
             incr simulate_times
-            Run "bash sim_only.mod rtl -c" $output_win
+            Run "bash sim_only.mod -c" $output_win
         } else {
             $output_win insert end "test_case :[lindex $line 0] simulation failed!!\n" 
         }    

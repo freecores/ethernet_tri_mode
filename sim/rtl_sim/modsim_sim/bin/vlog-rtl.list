@@ -32,7 +32,7 @@
 ../../../../rtl/verilog/MAC_top.v
 ../../../../rtl/verilog/Phy_int.v
 ../../../../rtl/verilog/Clk_ctrl.v
-../../../../rtl/verilog/Reg_int.v
+../../../../rtl/verilog/reg_int.v
 ../../../../rtl/verilog/afifo.v
 
 ../../../../bench/verilog/altera_mf.v

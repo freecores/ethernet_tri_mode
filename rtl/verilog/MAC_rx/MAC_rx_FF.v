@@ -39,6 +39,9 @@
 // CVS Revision History                                               
 //                                                                    
 // $Log: not supported by cvs2svn $
+// Revision 1.6  2008/08/17 11:41:30  maverickist
+// no message
+//
 // Revision 1.5  2006/06/25 04:58:56  maverickist
 // no message
 //
@@ -124,17 +127,17 @@ parameter       SYS_wait_end    =3'd2;
 parameter       SYS_idle        =3'd3;
 parameter       FF_emtpy_err    =3'd4;
 
-reg [`MAC_TX_FF_DEPTH-1:0]       Add_wr;
-reg [`MAC_TX_FF_DEPTH-1:0]       Add_wr_ungray;
-reg [`MAC_TX_FF_DEPTH-1:0]       Add_wr_gray;
-reg [`MAC_TX_FF_DEPTH-1:0]       Add_wr_gray_dl1;
-reg [`MAC_TX_FF_DEPTH-1:0]       Add_wr_reg;
+reg [`MAC_RX_FF_DEPTH-1:0]       Add_wr;
+reg [`MAC_RX_FF_DEPTH-1:0]       Add_wr_ungray;
+reg [`MAC_RX_FF_DEPTH-1:0]       Add_wr_gray;
+reg [`MAC_RX_FF_DEPTH-1:0]       Add_wr_gray_dl1;
+reg [`MAC_RX_FF_DEPTH-1:0]       Add_wr_reg;
 
-reg [`MAC_TX_FF_DEPTH-1:0]       Add_rd;
-reg [`MAC_TX_FF_DEPTH-1:0]       Add_rd_pl1;
-reg [`MAC_TX_FF_DEPTH-1:0]       Add_rd_gray;
-reg [`MAC_TX_FF_DEPTH-1:0]       Add_rd_gray_dl1;
-reg [`MAC_TX_FF_DEPTH-1:0]       Add_rd_ungray;
+reg [`MAC_RX_FF_DEPTH-1:0]       Add_rd;
+reg [`MAC_RX_FF_DEPTH-1:0]       Add_rd_pl1;
+reg [`MAC_RX_FF_DEPTH-1:0]       Add_rd_gray;
+reg [`MAC_RX_FF_DEPTH-1:0]       Add_rd_gray_dl1;
+reg [`MAC_RX_FF_DEPTH-1:0]       Add_rd_ungray;
 reg [35:0]      Din;
 reg [35:0]      Din_tmp;
 reg [35:0]      Din_tmp_reg;
@@ -142,10 +145,10 @@ wire[35:0]      Dout;
 reg             Wr_en;
 reg             Wr_en_tmp;
 reg             Wr_en_ptr;
-wire[`MAC_TX_FF_DEPTH-1:0]       Add_wr_pluse;
-wire[`MAC_TX_FF_DEPTH-1:0]       Add_wr_pluse4;
-wire[`MAC_TX_FF_DEPTH-1:0]       Add_wr_pluse3;
-wire[`MAC_TX_FF_DEPTH-1:0]       Add_wr_pluse2;
+wire[`MAC_RX_FF_DEPTH-1:0]       Add_wr_pluse;
+wire[`MAC_RX_FF_DEPTH-1:0]       Add_wr_pluse4;
+wire[`MAC_RX_FF_DEPTH-1:0]       Add_wr_pluse3;
+wire[`MAC_RX_FF_DEPTH-1:0]       Add_wr_pluse2;
 reg             Full;
 reg             Almost_full;
 reg             Empty /* synthesis syn_keep=1 */;
